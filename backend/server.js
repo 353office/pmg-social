@@ -1193,10 +1193,53 @@ if ((countRow?.count || 0) === 0) {
   } else {
     console.log('No users found in Postgres. Seeding sample data...');
     await seedData();
+    async function seedSimpleBulgarianPosts() {
+  const count = await db.prepare('SELECT COUNT(*)::int AS count FROM posts').get();
+  if ((count?.count || 0) > 0) {
+    console.log('Posts already exist. Skipping simple seed.');
+    return;
+  }
+
+  const user = await db.prepare('SELECT id FROM users LIMIT 1').get();
+  if (!user) {
+    console.log('No users found. Cannot seed posts.');
+    return;
+  }
+
+  const posts = [
+    'Някой знае ли кога ще ни върнат контролните по математика?',
+    'Утре имаме класно по български, успех на всички!',
+    'Кой ще участва в състезанието по информатика тази година?',
+    'Напомняне: срокът за проекта по история е до петък.',
+    'Има ли свободни места в клуба по роботика?',
+    'Днес тренировката по волейбол е от 16:30 в салона.',
+    'Моля, споделете материала от последния урок по физика.',
+    'Предстои училищният бал – кой вече си е избрал тоалет?',
+    'Честит празник на всички ученици и учители!',
+    'Кой ще ходи на екскурзията до Пловдив този месец?'
+  ];
+
+  const insert = db.prepare(`
+    INSERT INTO posts (id, user_id, content, visibility, engagement_score, created_at)
+    VALUES (?, ?, ?, 'public', 0, NOW())
+  `);
+
+  for (const content of posts) {
+    insert.run(uuidv4(), user.id, content);
+  }
+
+  console.log('✓ Simple Bulgarian posts seeded');
+}
     console.log('✓ Seed finished');
   }
 }
 }
+
+if ((process.env.SEED_SIMPLE_POSTS || 'false').toLowerCase() === 'true') {
+      await seedSimpleBulgarianPosts();
+    }
+
+
   } catch (err) {
     console.error('Failed to start server:', err);
     process.exit(1);
