@@ -10,7 +10,7 @@ const path = require('path');
 const { migrateSqliteToPostgres } = require('./scripts/sqliteMigrator');
 
 const app = express();
-const PORT = Number(process.env.PORT || 3001);
+const PORT = process.env.PORT || 3000;
 
 app.use(cors({
   origin: (origin, cb) => {
@@ -1177,7 +1177,7 @@ if ((countRow?.count || 0) === 0) {
   }
 }
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`
 ========================================
   School Social Network - CLEAN BUILD
