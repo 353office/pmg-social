@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Училищна социална мрежа</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+  <!-- Login Screen -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-box">
+      <div class="login-logo"><i data-lucide="school"></i></div>
+      <h1 class="login-title">Добре дошли</h1>
+      <p class="login-subtitle">Училищна социална мрежа</p>
+      
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">Потребителско име</label>
+          <input type="text" id="username" class="form-input" placeholder="student_11а_1" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Парола</label>
+          <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+        </div>
+        
+        <button type="submit" class="login-btn">Вход</button>
+        <div id="login-error" class="error-msg hidden"></div>
+      </form>
+      
+      <div class="login-help">
+        <p><strong>Примерни акаунти:</strong></p>
+        <p>Ученик: student_11а_1 / student123</p>
+        <p>Учител: teacher_11а / teacher123</p>
+        <p>Админ: admin / admin123</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="main-app" class="hidden">
+    <div class="container">
+      <!-- Left Sidebar -->
+      <aside class="sidebar">
+        <div class="logo"><i data-lucide="school"></i> <span>Училище</span></div>
+        
+        <div class="user-info">
+          <img id="user-avatar" class="user-avatar" src="" alt="Avatar" onclick="navigateTo('profile', window.STATE.currentUser.id)">
+          <div class="user-details">
+            <div class="user-name" id="user-name"></div>
+            <div class="user-role" id="user-role"></div>
+          </div>
+          <button class="logout-btn" onclick="handleLogout()">Изход</button>
+        </div>
+        
+        <nav class="nav">
+          <div class="nav-item active" onclick="navigateTo('home')">
+            <span class="icon"><i data-lucide="home"></i></span>
+            <span>Начало</span>
+          </div>
+          
+          <div class="nav-item" onclick="navigateTo('search')">
+            <span class="icon"><i data-lucide="search"></i></span>
+            <span>Търсене</span>
+          </div>
+          
+          <div class="nav-item" onclick="toggleNotifications()" style="position: relative;">
+            <span class="icon"><i data-lucide="bell"></i></span>
+            <span>Известия</span>
+            <span id="notif-badge" class="notif-badge hidden">0</span>
+          </div>
+          
+          <div class="nav-item" onclick="navigateTo('calendar')">
+            <span class="icon"><i data-lucide="calendar"></i></span>
+            <span>Календар</span>
+          </div>
+          
+          <div class="nav-item" onclick="navigateTo('clubs')">
+            <span class="icon"><i data-lucide="target"></i></span>
+            <span>Клубове</span>
+          </div>
+          
+          <div class="nav-item" onclick="navigateTo('messages')">
+            <span class="icon">✉️</span>
+            <span>Съобщения</span>
+          </div>
+          
+          <div class="nav-item" id="admin-nav" onclick="navigateTo('admin')" style="display: none;">
+            <span class="icon">⚙️</span>
+            <span>Управление</span>
+          </div>
+        </nav>
+      </aside>
+
+      <!-- Notifications Dropdown -->
+      <div id="notifications-dropdown" class="notifications-dropdown hidden">
+        <div class="notif-header">
+          <h3>Известия</h3>
+          <button onclick="markAllRead()" class="btn-text">Маркирай всички</button>
+        </div>
+        <div id="notif-list" class="notif-list">
+          <div class="loading">Зареждане...</div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Feed Page -->
+        <div id="page-home" class="page active">
+          <div class="page-header">
+            <h1 class="page-title">Начало</h1>
+          </div>
+
+          <div id="post-composer" class="post-composer">
+            <img id="composer-avatar" class="composer-avatar" src="" alt="Avatar">
+            <div class="composer-body">
+              <textarea id="post-input" class="composer-input" placeholder="Какво мислиш? Използвай @потребител за споменаване" oninput="updatePostButton()"></textarea>
+              <div class="composer-actions">
+                <input type="url" id="post-image-url" class="form-input" placeholder="URL на изображение (по избор)" style="max-width: 300px;">
+                <select id="post-visibility" class="visibility-select" onchange="handleFeedFilterChange()">
+                  <option value="public">Публично</option>
+                  <option value="grade">Моят випуск</option>
+                  <option value="class">Моят клас</option>
+                </select>
+                <button id="post-button" class="btn btn-primary" disabled onclick="handleCreatePost()">Публикувай</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="posts-feed" class="posts-feed">
+            <div class="loading">Зареждане...</div>
+          </div>
+        </div>
+
+        <!-- Search Page -->
+        <div id="page-search" class="page">
+          <div class="page-header">
+            <h1 class="page-title">Търсене</h1>
+          </div>
+          
+          <div class="search-container">
+            <div class="search-box">
+              <input type="text" id="search-input" class="search-input" placeholder="Търси публикации, хора..." oninput="handleSearch()">
+            </div>
+            
+            <div class="search-tabs">
+              <button class="search-tab active" onclick="switchSearchTab('posts')">Публикации</button>
+              <button class="search-tab" onclick="switchSearchTab('users')">Хора</button>
+            </div>
+            
+            <div id="search-results-posts" class="search-results active"></div>
+            <div id="search-results-users" class="search-results"></div>
+          </div>
+        </div>
+
+        <!-- Calendar Page -->
+        <div id="page-calendar" class="page">
+          <div class="page-header">
+            <h1 class="page-title">Календар</h1>
+            <button class="btn btn-primary" onclick="showCreateEventModal()" id="add-event-btn">+ Ново събитие</button>
+          </div>
+          <div id="calendar-content" class="calendar-grid"></div>
+        </div>
+
+        <!-- Clubs Page -->
+        <div id="page-clubs" class="page">
+          <div class="page-header">
+            <h1 class="page-title">Клубове</h1>
+            <button class="btn btn-primary" onclick="showCreateClubModal()" id="add-club-btn">+ Създай клуб</button>
+          </div>
+          <div id="clubs-content" class="clubs-grid"></div>
+        </div>
+
+        <!-- Club Detail Page -->
+        <div id="page-club-detail" class="page">
+          <div class="page-header">
+            <button class="btn btn-secondary" onclick="history.back()">← Назад</button>
+            <h1 class="page-title" id="club-detail-title">Клуб</h1>
+          </div>
+          <div id="club-detail-content"></div>
+        </div>
+
+        <!-- Messages Page -->
+        <div id="page-messages" class="page">
+          <div class="page-header">
+            <h1 class="page-title">Съобщения</h1>
+            <button class="btn btn-primary" onclick="showNewMessageModal()">+ Ново</button>
+          </div>
+          <div class="messages-container">
+            <div class="conversations-list" id="conversations-list">
+              <div class="empty-state">Няма съобщения</div>
+            </div>
+            <div class="chat-area" id="chat-area">
+              <div class="empty-state">Избери разговор</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin Page -->
+        <div id="page-admin" class="page">
+          <div class="page-header">
+            <h1 class="page-title">Управление на потребители</h1>
+            <button class="btn btn-primary" onclick="showCreateUserModal()">+ Създай потребител</button>
+          </div>
+          <div id="admin-content" class="admin-container">
+            <div class="loading">Зареждане...</div>
+          </div>
+        </div>
+
+        <!-- Profile Page -->
+        <div id="page-profile" class="page">
+          <div class="page-header">
+            <button class="btn btn-secondary" onclick="history.back()">← Назад</button>
+            <h1 class="page-title" id="profile-title">Профил</h1>
+          </div>
+          <div id="profile-content"></div>
+        </div>
+
+        <!-- Post Detail Page -->
+        <div id="page-post" class="page">
+          <div class="page-header">
+            <button class="btn btn-secondary" onclick="history.back()">← Назад</button>
+            <h1 class="page-title">Публикация</h1>
+          </div>
+          <div id="post-detail-content"></div>
+        </div>
+      </main>
+
+      <!-- Right Sidebar -->
+      <aside class="right-sidebar">
+        <div class="widget">
+          <div class="widget-header">
+            <h3>Предстоящи събития</h3>
+          </div>
+          <div id="calendar-widget" class="widget-content"></div>
+        </div>
+
+        <div class="widget">
+          <div class="widget-header">
+            <h3>Училищни клубове</h3>
+          </div>
+          <div id="clubs-widget" class="widget-content"></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <div id="create-event-modal" class="modal hidden">
+    <div class="modal-overlay" onclick="closeModal('create-event-modal')"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Създай събитие</h3>
+        <button class="modal-close" onclick="closeModal('create-event-modal')">&times;</button>
+      </div>
+      <form id="create-event-form" onsubmit="handleCreateEvent(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Заглавие *</label>
+            <input type="text" name="title" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Описание</label>
+            <textarea name="description" class="form-input" rows="3"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Дата *</label>
+              <input type="date" name="event_date" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Час</label>
+              <input type="time" name="event_time" class="form-input">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Локация</label>
+            <input type="text" name="location" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Тип *</label>
+            <select name="event_type" class="form-input" required>
+              <option value="event">Събитие</option>
+              <option value="meeting">Среща</option>
+              <option value="exam">Изпит</option>
+              <option value="holiday">Ваканция</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">За конкретен клас?</label>
+            <div class="form-row">
+              <input type="text" name="class_grade" class="form-input" placeholder="11">
+              <input type="text" name="class_letter" class="form-input" placeholder="а">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('create-event-modal')">Отказ</button>
+          <button type="submit" class="btn btn-primary">Създай</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="event-detail-modal" class="modal hidden">
+    <div class="modal-overlay" onclick="closeModal('event-detail-modal')"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="event-detail-title">Събитие</h3>
+        <button class="modal-close" onclick="closeModal('event-detail-modal')">&times;</button>
+      </div>
+      <div id="event-detail-body" class="modal-body"></div>
+    </div>
+  </div>
+
+  <div id="create-club-modal" class="modal hidden">
+    <div class="modal-overlay" onclick="closeModal('create-club-modal')"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Създай клуб</h3>
+        <button class="modal-close" onclick="closeModal('create-club-modal')">&times;</button>
+      </div>
+      <form id="create-club-form" onsubmit="handleCreateClub(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Име *</label>
+            <input type="text" name="name" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Описание *</label>
+            <textarea name="description" class="form-input" rows="3" required></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">График</label>
+            <input type="text" name="meeting_schedule" class="form-input" placeholder="Понеделник и Сряда, 15:00-17:00">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Локация</label>
+            <input type="text" name="meeting_location" class="form-input" placeholder="Кабинет 305">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('create-club-modal')">Отказ</button>
+          <button type="submit" class="btn btn-primary">Създай</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="new-message-modal" class="modal hidden">
+    <div class="modal-overlay" onclick="closeModal('new-message-modal')"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Ново съобщение</h3>
+        <button class="modal-close" onclick="closeModal('new-message-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Търси потребител</label>
+          <input type="text" id="user-search-input" class="form-input" placeholder="Име..." oninput="handleUserSearch()">
+        </div>
+        <div id="user-search-results" class="user-search-results"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="delete-modal" class="modal hidden">
+    <div class="modal-overlay" onclick="closeModal('delete-modal')"></div>
+    <div class="modal-content modal-small">
+      <div class="modal-header">
+        <h3>Потвърждение</h3>
+        <button class="modal-close" onclick="closeModal('delete-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="delete-message">Сигурни ли сте?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('delete-modal')">Отказ</button>
+        <button class="btn btn-danger" id="delete-confirm-btn" onclick="confirmDelete()">Изтрий</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="create-user-modal" class="modal hidden">
+    <div class="modal-overlay" onclick="closeModal('create-user-modal')"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Създай потребител</h3>
+        <button class="modal-close" onclick="closeModal('create-user-modal')">&times;</button>
+      </div>
+      <form id="create-user-form" onsubmit="handleCreateUser(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Име и фамилия *</label>
+            <input type="text" name="full_name" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email *</label>
+            <input type="email" name="email" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Роля *</label>
+            <select name="role" class="form-input" required onchange="handleRoleChange(event)">
+              <option value="">Избери...</option>
+              <option value="student">Ученик</option>
+              <option value="teacher">Учител</option>
+              <option value="parent">Родител</option>
+              <option value="admin">Администратор</option>
+            </select>
+          </div>
+          <div id="class-fields" class="form-group" style="display: none;">
+            <label class="form-label">Клас</label>
+            <div class="form-row">
+              <input type="text" name="class_grade" class="form-input" placeholder="11">
+              <input type="text" name="class_letter" class="form-input" placeholder="а">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('create-user-modal')">Отказ</button>
+          <button type="submit" class="btn btn-primary">Създай</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="user-created-modal" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>✅ Потребител създаден</h3>
+        <button class="modal-close" onclick="closeUserCreatedModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="background: #f7f9fa; padding: 20px; border-radius: 12px;">
+          <p style="margin-bottom: 12px;"><strong>Запишете тези данни:</strong></p>
+          <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 12px;">
+            <div style="margin-bottom: 8px;">
+              <strong>Потребител:</strong> <span id="created-username" style="font-family: monospace;"></span>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <strong>Парола:</strong> 
+              <span id="created-password" style="font-family: monospace; font-size: 18px; color: #1d9bf0;"></span>
+              <button class="btn-icon" onclick="copyPassword()"><i data-lucide="clipboard-copy"></i></button>
+            </div>
+            <div>
+              <strong>Email:</strong> <span id="created-email"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="closeUserCreatedModal()">Разбрах</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="edit-profile-modal" class="modal hidden">
+    <div class="modal-overlay" onclick="closeModal('edit-profile-modal')"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Редактирай профил</h3>
+        <button class="modal-close" onclick="closeModal('edit-profile-modal')">&times;</button>
+      </div>
+      <form id="edit-profile-form" onsubmit="handleUpdateProfile(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Биография</label>
+            <textarea id="edit-bio" class="form-input" rows="4"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Профилна снимка (URL)</label>
+            <input type="url" id="edit-profile-picture" class="form-input" placeholder="https://example.com/image.jpg">
+            <p style="font-size: 13px; color: #536471; margin-top: 4px;">
+              Използвайте <a href="https://imgur.com/upload" target="_blank">Imgur</a> за качване на изображения
+            </p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('edit-profile-modal')">Отказ</button>
+          <button type="submit" class="btn btn-primary">Запази</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="notification" class="notification hidden"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/router.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/feed.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/calendar.js"></script>
+  <script src="js/clubs.js"></script>
+  <script src="js/messages.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/profile.js"></script>
+  <script src="js/notifications.js"></script>
+</body>
+</html>
