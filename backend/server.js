@@ -1170,30 +1170,7 @@ app.get('/api/health', async (req, res) => {
   res.json({ status: 'OK', message: 'School Social Network API' });
 });
 
-// Start server
-(async () => {
-  try {
-await initDB();
-
-// If Postgres is empty, bootstrap it either by migrating the bundled SQLite DB
-// (same initial state as the SQLite version) or by running the built-in seed.
-const countRow = await db.prepare('SELECT COUNT(*)::int AS count FROM users').get();
-if ((countRow?.count || 0) === 0) {
-  const auto = (process.env.AUTO_MIGRATE_SQLITE || 'true').toLowerCase() !== 'false';
-  const sqlitePath = process.env.SQLITE_PATH || path.join(__dirname, 'sqlite_backup', 'school.db');
-  if (auto && fs.existsSync(sqlitePath)) {
-    console.log('No users found in Postgres. Migrating from SQLite:', sqlitePath);
-    await migrateSqliteToPostgres({ sqlitePath, pg: db });
-    console.log('✓ SQLite → Postgres migration finished');
-  } else {
-    const shouldSeed = (process.env.SEED_ON_EMPTY || 'false').toLowerCase() === 'true';
-
-  if (!shouldSeed) {
-    console.log('No users found in Postgres. Seeding is disabled (set SEED_ON_EMPTY=true to seed).');
-  } else {
-    console.log('No users found in Postgres. Seeding sample data...');
-    await seedData();
-    async function seedSimpleBulgarianPosts() {
+  async function seedSimpleBulgarianPosts() {
   const count = await db.prepare('SELECT COUNT(*)::int AS count FROM posts').get();
   if ((count?.count || 0) > 0) {
     console.log('Posts already exist. Skipping simple seed.');
@@ -1230,6 +1207,31 @@ if ((countRow?.count || 0) === 0) {
 
   console.log('✓ Simple Bulgarian posts seeded');
 }
+
+
+// Start server
+(async () => {
+  try {
+await initDB();
+
+// If Postgres is empty, bootstrap it either by migrating the bundled SQLite DB
+// (same initial state as the SQLite version) or by running the built-in seed.
+const countRow = await db.prepare('SELECT COUNT(*)::int AS count FROM users').get();
+if ((countRow?.count || 0) === 0) {
+  const auto = (process.env.AUTO_MIGRATE_SQLITE || 'true').toLowerCase() !== 'false';
+  const sqlitePath = process.env.SQLITE_PATH || path.join(__dirname, 'sqlite_backup', 'school.db');
+  if (auto && fs.existsSync(sqlitePath)) {
+    console.log('No users found in Postgres. Migrating from SQLite:', sqlitePath);
+    await migrateSqliteToPostgres({ sqlitePath, pg: db });
+    console.log('✓ SQLite → Postgres migration finished');
+  } else {
+    const shouldSeed = (process.env.SEED_ON_EMPTY || 'false').toLowerCase() === 'true';
+
+  if (!shouldSeed) {
+    console.log('No users found in Postgres. Seeding is disabled (set SEED_ON_EMPTY=true to seed).');
+  } else {
+    console.log('No users found in Postgres. Seeding sample data...');
+    await seedData();
     console.log('✓ Seed finished');
   }
 }
