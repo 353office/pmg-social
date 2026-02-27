@@ -31,12 +31,11 @@ function createDB() {
     throw new Error('DATABASE_URL is required (PostgreSQL connection string).');
   }
 
-  const sslEnabled = String(process.env.PGSSL || '').toLowerCase() === 'true';
   const rejectUnauthorized = String(process.env.PGSSL_REJECT_UNAUTHORIZED || '').toLowerCase() !== 'false';
 
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: sslEnabled ? { rejectUnauthorized } : undefined,
+    ssl: { rejectUnauthorized: false }
   });
 
   return {
