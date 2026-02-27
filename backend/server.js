@@ -1171,19 +1171,13 @@ app.get('/api/health', async (req, res) => {
 });
 
 async function seedSimpleBulgarianPosts() {
-  const count = await db.prepare('SELECT COUNT(*)::int AS count FROM posts').get();
-  if ((count?.count || 0) > 0) {
-    console.log('Posts already exist. Skipping simple seed.');
-    return;
-  }
-
   const users = await db.prepare('SELECT id FROM users').all();
   if (!users || users.length === 0) {
     console.log('No users found. Cannot seed posts.');
     return;
   }
 
-  const posts = [
+  const postsText = [
     'Някой знае ли кога ще ни върнат контролните по математика?',
     'Утре имаме класно по български, успех на всички!',
     'Кой ще участва в състезанието по информатика тази година?',
@@ -1193,39 +1187,85 @@ async function seedSimpleBulgarianPosts() {
     'Моля, споделете материала от последния урок по физика.',
     'Предстои училищният бал – кой вече си е избрал тоалет?',
     'Честит празник на всички ученици и учители!',
-    'Кой ще ходи на екскурзията до Пловдив този месец?',
-    'Има ли някой записките по химия?',
-    'Супер урок по история днес!',
-    'Кога ще качат оценките в Школо?',
-    'Някой да обясни задача 5 от домашното?',
-    'Тренировка по баскетбол след часовете 🏀'
+    'Кой ще ходи на екскурзията до Пловдив този месец?'
   ];
 
-  const insert = db.prepare(`
+  const commentsText = [
+    'Съгласен съм!',
+    'И аз се чудя.',
+    'Мисля, че е в петък.',
+    'Благодаря!',
+    'Ще проверя и ще пиша.',
+    'Супер идея!',
+    'Успех на всички!'
+  ];
+
+  const insertPost = db.prepare(`
     INSERT INTO posts (id, user_id, content, visibility, engagement_score, created_at)
-    VALUES (?, ?, ?, ?, ?, NOW())
+    VALUES (?, ?, ?, ?, ?, ?)
+  `);
+
+  const insertLike = db.prepare(`
+    INSERT INTO likes (id, post_id, user_id)
+    VALUES (?, ?, ?)
+  `);
+
+  const insertComment = db.prepare(`
+    INSERT INTO comments (id, post_id, user_id, content, created_at)
+    VALUES (?, ?, ?, ?, ?)
   `);
 
   const visibilityOptions = ['public', 'class', 'grade'];
-
-  const TOTAL_POSTS = 300; // 🔥 change this number if you want more
+  const TOTAL_POSTS = 300;
 
   for (let i = 0; i < TOTAL_POSTS; i++) {
-    const randomUser = users[Math.floor(Math.random() * users.length)];
-    const randomContent = posts[Math.floor(Math.random() * posts.length)];
-    const randomVisibility = visibilityOptions[Math.floor(Math.random() * visibilityOptions.length)];
-    const randomScore = Math.floor(Math.random() * 50);
+    const postId = uuidv4();
+    const author = users[Math.floor(Math.random() * users.length)];
+    const content = postsText[Math.floor(Math.random() * postsText.length)];
+    const visibility = visibilityOptions[Math.floor(Math.random() * visibilityOptions.length)];
 
-    insert.run(
-      uuidv4(),
-      randomUser.id,
-      randomContent,
-      randomVisibility,
-      randomScore
+    // Random timestamp in last 30 days
+    const daysAgo = Math.floor(Math.random() * 30);
+    const createdAt = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
+
+    insertPost.run(
+      postId,
+      author.id,
+      content,
+      visibility,
+      0,
+      createdAt.toISOString()
     );
+
+    // Random likes
+    const likeCount = Math.floor(Math.random() * 10);
+    for (let j = 0; j < likeCount; j++) {
+      const liker = users[Math.floor(Math.random() * users.length)];
+      if (liker.id !== author.id) {
+        try {
+          insertLike.run(uuidv4(), postId, liker.id);
+        } catch (e) {}
+      }
+    }
+
+    // Random comments
+    const commentCount = Math.floor(Math.random() * 5);
+    for (let k = 0; k < commentCount; k++) {
+      const commenter = users[Math.floor(Math.random() * users.length)];
+      const commentText = commentsText[Math.floor(Math.random() * commentsText.length)];
+      const commentDate = new Date(createdAt.getTime() + Math.random() * 86400000);
+
+      insertComment.run(
+        uuidv4(),
+        postId,
+        commenter.id,
+        commentText,
+        commentDate.toISOString()
+      );
+    }
   }
 
-  console.log(`✓ Seeded ${TOTAL_POSTS} Bulgarian posts from random users`);
+  console.log(`✓ Seeded ${TOTAL_POSTS} realistic Bulgarian posts with likes and comments`);
 }
 
 
