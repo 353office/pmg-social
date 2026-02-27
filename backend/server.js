@@ -10,8 +10,23 @@ const path = require('path');
 const { migrateSqliteToPostgres } = require('./scripts/sqliteMigrator');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+app.get("/", (req, res) => res.status(200).send("OK"));
+app.get("/health", (req, res) => res.status(200).json({ ok: true }));
 
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`
+listening on ${PORT}
+
+Server: http://localhost:${PORT}
+API:    http://localhost:${PORT}/api
+
+Example logins:  student_11а_1 / student123
+        teacher_11а / teacher123
+        admin / admin123
+`);
+    });
+    
 app.use(cors({
   origin: (origin, cb) => {
     const allowed = (process.env.CORS_ORIGIN || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -1176,32 +1191,6 @@ if ((countRow?.count || 0) === 0) {
     console.log('✓ Seed finished');
   }
 }
-
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`
-========================================
-  School Social Network - CLEAN BUILD
-========================================
-Server: http://localhost:${PORT}
-API:    http://localhost:${PORT}/api
-
-Login:  student_11а_1 / student123
-        teacher_11а / teacher123
-        admin / admin123
-
-Features:
-✓ 270 students, 9 teachers, 2 admins
-✓ 500 posts with smart feed
-✓ Persistent sessions
-✓ Private messaging
-✓ Clubs with members
-✓ Calendar events
-✓ Delete posts/comments
-✓ Leave clubs
-✓ Search users
-========================================
-`);
-    });
   } catch (err) {
     console.error('Failed to start server:', err);
     process.exit(1);
