@@ -362,7 +362,7 @@ app.post('/api/login', async (req, res) => {
       user.password = hashed;
     }
     
-    const token = crypto.randomBytes(32).toString('hex');
+    const token = crypto.randomUUID();
     const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
     
     await db.prepare('INSERT INTO sessions (id, user_id, token, expires_at) VALUES (?, ?, ?, ?)').run(uuidv4(), user.id, token, expires);
