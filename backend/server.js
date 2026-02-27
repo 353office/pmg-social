@@ -1187,85 +1187,51 @@ async function seedSimpleBulgarianPosts() {
     'Моля, споделете материала от последния урок по физика.',
     'Предстои училищният бал – кой вече си е избрал тоалет?',
     'Честит празник на всички ученици и учители!',
-    'Кой ще ходи на екскурзията до Пловдив този месец?'
+    'Кой ще ходи на екскурзията до Пловдив този месец?',
+    'Някой има ли записките по химия?',
+    'Супер интересен урок днес!',
+    'Кога ще качат оценките?',
+    'Някой да помогне със задача 5?',
+    'Тренировка по баскетбол след часовете 🏀'
   ];
-
-  const commentsText = [
-    'Съгласен съм!',
-    'И аз се чудя.',
-    'Мисля, че е в петък.',
-    'Благодаря!',
-    'Ще проверя и ще пиша.',
-    'Супер идея!',
-    'Успех на всички!'
-  ];
-
-  const insertPost = db.prepare(`
-    INSERT INTO posts (id, user_id, content, visibility, engagement_score, created_at)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `);
-
-  const insertLike = db.prepare(`
-    INSERT INTO likes (id, post_id, user_id)
-    VALUES (?, ?, ?)
-  `);
-
-  const insertComment = db.prepare(`
-    INSERT INTO comments (id, post_id, user_id, content, created_at)
-    VALUES (?, ?, ?, ?, ?)
-  `);
 
   const visibilityOptions = ['public', 'class', 'grade'];
-  const TOTAL_POSTS = 300;
+
+  const insert = db.prepare(`
+    INSERT INTO posts (id, user_id, content, visibility, engagement_score, created_at)
+    VALUES (?, ?, ?, ?, 0, ?)
+  `);
+
+  const TOTAL_POSTS = 400; // change if you want more
 
   for (let i = 0; i < TOTAL_POSTS; i++) {
-    const postId = uuidv4();
-    const author = users[Math.floor(Math.random() * users.length)];
-    const content = postsText[Math.floor(Math.random() * postsText.length)];
-    const visibility = visibilityOptions[Math.floor(Math.random() * visibilityOptions.length)];
+    const randomUser = users[Math.floor(Math.random() * users.length)];
+    const randomContent = postsText[Math.floor(Math.random() * postsText.length)];
+    const randomVisibility = visibilityOptions[Math.floor(Math.random() * visibilityOptions.length)];
 
-    // Random timestamp in last 30 days
+    // Random timestamp within last 30 days
     const daysAgo = Math.floor(Math.random() * 30);
-    const createdAt = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
+    const hoursAgo = Math.floor(Math.random() * 24);
+    const minutesAgo = Math.floor(Math.random() * 60);
 
-    insertPost.run(
-      postId,
-      author.id,
-      content,
-      visibility,
-      0,
-      createdAt.toISOString()
+    const createdAt = new Date(
+      Date.now() - (
+        daysAgo * 24 * 60 * 60 * 1000 +
+        hoursAgo * 60 * 60 * 1000 +
+        minutesAgo * 60 * 1000
+      )
     );
 
-    // Random likes
-    const likeCount = Math.floor(Math.random() * 10);
-    for (let j = 0; j < likeCount; j++) {
-      const liker = users[Math.floor(Math.random() * users.length)];
-      if (liker.id !== author.id) {
-        try {
-          insertLike.run(uuidv4(), postId, liker.id);
-        } catch (e) {}
-      }
-    }
-
-    // Random comments
-    const commentCount = Math.floor(Math.random() * 5);
-    for (let k = 0; k < commentCount; k++) {
-      const commenter = users[Math.floor(Math.random() * users.length)];
-      const commentText = commentsText[Math.floor(Math.random() * commentsText.length)];
-      const commentDate = new Date(createdAt.getTime() + Math.random() * 86400000);
-
-      insertComment.run(
-        uuidv4(),
-        postId,
-        commenter.id,
-        commentText,
-        commentDate.toISOString()
-      );
-    }
+    insert.run(
+      uuidv4(),
+      randomUser.id,
+      randomContent,
+      randomVisibility,
+      createdAt.toISOString()
+    );
   }
 
-  console.log(`✓ Seeded ${TOTAL_POSTS} realistic Bulgarian posts with likes and comments`);
+  console.log(`✓ Seeded ${TOTAL_POSTS} Bulgarian posts with randomized timestamps`);
 }
 
 
