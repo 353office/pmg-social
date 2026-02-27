@@ -1186,10 +1186,16 @@ if ((countRow?.count || 0) === 0) {
     await migrateSqliteToPostgres({ sqlitePath, pg: db });
     console.log('✓ SQLite → Postgres migration finished');
   } else {
+    const shouldSeed = (process.env.SEED_ON_EMPTY || 'false').toLowerCase() === 'true';
+
+  if (!shouldSeed) {
+    console.log('No users found in Postgres. Seeding is disabled (set SEED_ON_EMPTY=true to seed).');
+  } else {
     console.log('No users found in Postgres. Seeding sample data...');
     await seedData();
     console.log('✓ Seed finished');
   }
+}
 }
   } catch (err) {
     console.error('Failed to start server:', err);
