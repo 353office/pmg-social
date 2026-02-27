@@ -1170,15 +1170,15 @@ app.get('/api/health', async (req, res) => {
   res.json({ status: 'OK', message: 'School Social Network API' });
 });
 
-  async function seedSimpleBulgarianPosts() {
+async function seedSimpleBulgarianPosts() {
   const count = await db.prepare('SELECT COUNT(*)::int AS count FROM posts').get();
   if ((count?.count || 0) > 0) {
     console.log('Posts already exist. Skipping simple seed.');
     return;
   }
 
-  const user = await db.prepare('SELECT id FROM users LIMIT 1').get();
-  if (!user) {
+  const users = await db.prepare('SELECT id FROM users').all();
+  if (!users || users.length === 0) {
     console.log('No users found. Cannot seed posts.');
     return;
   }
@@ -1193,19 +1193,39 @@ app.get('/api/health', async (req, res) => {
     'Моля, споделете материала от последния урок по физика.',
     'Предстои училищният бал – кой вече си е избрал тоалет?',
     'Честит празник на всички ученици и учители!',
-    'Кой ще ходи на екскурзията до Пловдив този месец?'
+    'Кой ще ходи на екскурзията до Пловдив този месец?',
+    'Има ли някой записките по химия?',
+    'Супер урок по история днес!',
+    'Кога ще качат оценките в Школо?',
+    'Някой да обясни задача 5 от домашното?',
+    'Тренировка по баскетбол след часовете 🏀'
   ];
 
   const insert = db.prepare(`
     INSERT INTO posts (id, user_id, content, visibility, engagement_score, created_at)
-    VALUES (?, ?, ?, 'public', 0, NOW())
+    VALUES (?, ?, ?, ?, ?, NOW())
   `);
 
-  for (const content of posts) {
-    insert.run(uuidv4(), user.id, content);
+  const visibilityOptions = ['public', 'class', 'grade'];
+
+  const TOTAL_POSTS = 300; // 🔥 change this number if you want more
+
+  for (let i = 0; i < TOTAL_POSTS; i++) {
+    const randomUser = users[Math.floor(Math.random() * users.length)];
+    const randomContent = posts[Math.floor(Math.random() * posts.length)];
+    const randomVisibility = visibilityOptions[Math.floor(Math.random() * visibilityOptions.length)];
+    const randomScore = Math.floor(Math.random() * 50);
+
+    insert.run(
+      uuidv4(),
+      randomUser.id,
+      randomContent,
+      randomVisibility,
+      randomScore
+    );
   }
 
-  console.log('✓ Simple Bulgarian posts seeded');
+  console.log(`✓ Seeded ${TOTAL_POSTS} Bulgarian posts from random users`);
 }
 
 
