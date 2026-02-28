@@ -2,7 +2,7 @@
 const { Pool } = require('pg');
 
 /**
- * Light wrapper to keep existing better-sqlite3 style call sites:
+ * Light wrapper to keep existing SQLite-style call sites:
  *   db.prepare(sql).get(...params)
  *   db.prepare(sql).all(...params)
  *   db.prepare(sql).run(...params)

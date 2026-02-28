@@ -5,10 +5,6 @@ const { createDB } = require('./db');
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
-const fs = require('fs');
-const path = require('path');
-const { migrateSqliteToPostgres } = require('./scripts/sqliteMigrator');
-
 const app = express();
 app.get("/", (req, res) => res.status(200).send("OK"));
 app.get("/health", (req, res) => res.status(200).json({ ok: true }));
@@ -1322,19 +1318,10 @@ async function seedSimpleBulgarianPosts() {
   try {
 await initDB();
 
-// If Postgres is empty, bootstrap it either by migrating the bundled SQLite DB
-// (same initial state as the SQLite version) or by running the built-in seed.
+// If Postgres is empty, optionally seed initial data (Postgres-only).
 const countRow = await db.prepare('SELECT COUNT(*)::int AS count FROM users').get();
 if ((countRow?.count || 0) === 0) {
-  const auto = (process.env.AUTO_MIGRATE_SQLITE || 'true').toLowerCase() !== 'false';
-  const sqlitePath = process.env.SQLITE_PATH || path.join(__dirname, 'sqlite_backup', 'school.db');
-  if (auto && fs.existsSync(sqlitePath)) {
-    console.log('No users found in Postgres. Migrating from SQLite:', sqlitePath);
-    await migrateSqliteToPostgres({ sqlitePath, pg: db });
-    console.log('✓ SQLite → Postgres migration finished');
-  } else {
-    const shouldSeed = (process.env.SEED_ON_EMPTY || 'false').toLowerCase() === 'true';
-
+  const shouldSeed = (process.env.SEED_ON_EMPTY || 'false').toLowerCase() === 'true';
   if (!shouldSeed) {
     console.log('No users found in Postgres. Seeding is disabled (set SEED_ON_EMPTY=true to seed).');
   } else {
@@ -1343,11 +1330,12 @@ if ((countRow?.count || 0) === 0) {
     console.log('✓ Seed finished');
   }
 }
+
+// Optional: seed many Bulgarian posts (runs only if enabled).
+if ((process.env.SEED_SIMPLE_POSTS || 'false').toLowerCase() === 'true') {
+  await seedSimpleBulgarianPosts();
 }
 
-if ((process.env.SEED_SIMPLE_POSTS || 'false').toLowerCase() === 'true') {
-      await seedSimpleBulgarianPosts();
-    }
 
 
   } catch (err) {
