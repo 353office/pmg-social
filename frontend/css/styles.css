@@ -1050,6 +1050,43 @@ body {
   border-color: #1d9bf0;
 }
 
+
+/* Messages page: use full available height */
+body.page-messages .messages-container {
+  height: calc(100vh - 180px);
+  min-height: 600px;
+}
+
+/* Message delete button */
+.message {
+  position: relative;
+}
+.message-delete-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  opacity: 0;
+  transition: opacity 0.15s ease, background 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
+.message:hover .message-delete-btn {
+  opacity: 1;
+}
+.message-delete-btn:hover {
+  background: rgba(0,0,0,0.06);
+}
+.message-delete-btn i {
+  width: 16px;
+  height: 16px;
+}
+
 /* Admin */
 .admin-container {
   padding: 20px;

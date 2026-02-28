@@ -25,6 +25,9 @@ function renderFeedPosts(posts) {
   }
 
   feedEl.innerHTML = posts.map(post => renderPostSync(post)).join('');
+  if (window.lucide && typeof window.lucide.createIcons === 'function') {
+    window.lucide.createIcons();
+  }
   posts.forEach(post => loadPostInteractions(post.id));
 }
 
@@ -73,7 +76,7 @@ function renderPostSync(post) {
               <span class="author-name" onclick="navigateTo('profile', '${post.user_id}')">${escapeHtml(post.full_name)}</span>
               <span class="badge badge-${post.role}">${roleLabel}</span>
             </div>
-            ${canDelete ? `<button class="btn-icon" onclick="handleDeletePost('${post.id}')" title="Изтрий">🗑️</button>` : ''}
+            ${canDelete ? `<button class="btn-icon" onclick="handleDeletePost('${post.id}')" title="Изтрий"><i data-lucide="trash-2"></i></button>` : ''}
           </div>
           <div class="author-meta">
             ${post.class_grade && post.class_letter ? `${post.class_grade}${post.class_letter} клас · ` : ''}
@@ -147,7 +150,7 @@ async function renderPost(post) {
               <span class="author-name" onclick="navigateTo('profile', '${post.user_id}')">${escapeHtml(post.full_name)}</span>
               <span class="badge badge-${post.role}">${roleLabel}</span>
             </div>
-            ${canDelete ? `<button class="btn-icon" onclick="handleDeletePost('${post.id}')" title="Изтрий">🗑️</button>` : ''}
+            ${canDelete ? `<button class="btn-icon" onclick="handleDeletePost('${post.id}')" title="Изтрий"><i data-lucide="trash-2"></i></button>` : ''}
           </div>
           <div class="author-meta">
             ${post.class_grade && post.class_letter ? `${post.class_grade}${post.class_letter} клас · ` : ''}

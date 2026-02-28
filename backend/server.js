@@ -1140,6 +1140,36 @@ app.post('/api/messages', async (req, res) => {
   }
 });
 
+
+app.delete('/api/messages/:messageId', async (req, res) => {
+  try {
+    const { user_id } = req.body || {};
+    const messageId = req.params.messageId;
+
+    if (!user_id) {
+      return res.status(400).json({ error: 'user_id is required' });
+    }
+
+    const msg = await db.prepare('SELECT * FROM messages WHERE id = ?').get(messageId);
+    if (!msg) {
+      return res.status(404).json({ error: 'Message not found' });
+    }
+
+    const user = await db.prepare('SELECT role FROM users WHERE id = ?').get(user_id);
+    const isAdmin = user && String(user.role).toLowerCase() === 'admin';
+
+    if (!isAdmin && msg.sender_id !== user_id) {
+      return res.status(403).json({ error: 'Not allowed to delete this message' });
+    }
+
+    await db.prepare('DELETE FROM messages WHERE id = ?').run(messageId);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 // NOTIFICATIONS
 app.get('/api/notifications/:userId', async (req, res) => {
   try {

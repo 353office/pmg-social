@@ -248,5 +248,12 @@ const API = {
       method: 'POST',
       body: JSON.stringify({ sender_id: senderId, conversation_id: conversationId, content })
     });
+  },
+
+  async deleteMessage(messageId, userId) {
+    return this.request(`/messages/${messageId}`, {
+      method: 'DELETE',
+      body: JSON.stringify({ user_id: userId })
+    });
   }
 };

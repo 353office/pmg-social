@@ -47,8 +47,9 @@ async function loadConversation(conversationId, conversationName) {
                 `<div class="message-sender">${escapeHtml(msg.sender_name)}</div>` : 
                 ''}
               <div class="message-content">${escapeHtml(msg.content)}</div>
+              ${(msg.sender_id === STATE.currentUser.id || STATE.currentUser.role === 'admin') ? `<button class="message-delete-btn" title="Изтрий" onclick="handleDeleteMessage('${msg.id}', '${conversationId}', '${escapeHtml(conversationName)}')"><i data-lucide="trash-2"></i></button>` : ''}
               ${msg.created_at ? `<div class="message-meta">${formatClockTime(msg.created_at)}</div>` : ``}
-            </div>
+</div>
           `).join('')
         }
       </div>
@@ -59,6 +60,10 @@ async function loadConversation(conversationId, conversationName) {
         <button class="btn btn-primary" onclick="handleSendMessage()">Изпрати</button>
       </div>
     `;
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
     
     // Scroll to bottom
     const messagesEl = document.getElementById('chat-messages');
@@ -164,6 +169,21 @@ async function createOrOpenConversation(userId, userName) {
   }
 }
 
+
+
+async function handleDeleteMessage(messageId, conversationId, conversationName) {
+  if (!STATE.currentUser) return;
+  if (!confirm('Сигурни ли сте, че искате да изтриете това съобщение?')) return;
+
+  try {
+    await API.deleteMessage(messageId, STATE.currentUser.id);
+    // Reload current conversation and conversations list (last_message preview)
+    await loadConversation(conversationId, conversationName);
+    await loadConversations();
+  } catch (error) {
+    showError(error.message || 'Грешка при изтриване');
+  }
+}
 
 function formatClockTime(iso) {
   try {
