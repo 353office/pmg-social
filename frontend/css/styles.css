@@ -224,7 +224,7 @@ body {
 .logo {
  display: flex;
  align-items: center;
- justify-content: center;
+ padding-bottom: 10px;
  height: 56px;
 }
 
