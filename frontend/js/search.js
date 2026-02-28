@@ -1,4 +1,4 @@
-// SEARCH HANDLERS - ALL CALLABLE FROM HTML
+// SEARCH HANDLERS
 
 let searchTimeout;
 

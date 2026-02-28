@@ -8,7 +8,7 @@ window.STATE = {
   deleteCallback: null
 };
 
-// Default avatar image (SVG data URI) designed to sit cleanly inside circular crops.
+// Default avatar
 const DEFAULT_AVATAR = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22128%22%20height%3D%22128%22%20viewBox%3D%220%200%20128%20128%22%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23667eea%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23764ba2%22%2F%3E%0A%3C%2FlinearGradient%3E%3C%2Fdefs%3E%0A%3Ccircle%20cx%3D%2264%22%20cy%3D%2264%22%20r%3D%2264%22%20fill%3D%22url%28%23g%29%22%2F%3E%0A%3Ccircle%20cx%3D%2264%22%20cy%3D%2252%22%20r%3D%2220%22%20fill%3D%22%23fff%22%20opacity%3D%220.95%22%2F%3E%0A%3Cpath%20d%3D%22M34%20112c5-19%2021-30%2030-30s25%2011%2030%2030%22%20fill%3D%22%23fff%22%20opacity%3D%220.95%22%2F%3E%0A%3C%2Fsvg%3E';
 
 // INIT

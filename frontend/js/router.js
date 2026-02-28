@@ -1,4 +1,4 @@
-// ROUTER - Hash-based routing (works without server config)
+// ROUTER
 
 function navigateTo(page, param) {
   let hash = `#/${page}`;
@@ -11,7 +11,7 @@ function loadPage(page, param) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   
   
-  // Layout tweaks per page (e.g., hide right sidebar on Messages)
+  // Layout tweaks per page
   document.body.classList.toggle('page-messages', page === 'messages');
 // Update nav
   document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));

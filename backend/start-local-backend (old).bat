@@ -1,8 +1,6 @@
 @echo off
-echo ======================================
-echo   PULSE Social Media - Backend
-echo ======================================
-echo.
+echo Warning, you might want to run the db with docker.
+
 
 REM Check if Node.js is installed
 where node >nul 2>nul

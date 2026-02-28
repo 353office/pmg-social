@@ -1,4 +1,4 @@
-// ADMIN PANEL - ALL FUNCTIONS CALLABLE FROM HTML
+// ADMIN PANEL
 
 async function loadAdminPanel() {
   if (!STATE.currentUser || STATE.currentUser.role !== 'admin') {

@@ -1,4 +1,4 @@
-// CALENDAR HANDLERS - ALL CALLABLE FROM HTML
+// CALENDAR HANDLERS
 
 async function loadCalendar() {
   if (!STATE.currentUser) return;
@@ -138,7 +138,6 @@ async function handleDeleteEvent(eventId) {
   if (!confirm('Сигурни ли сте, че искате да изтриете това събитие?')) return;
   try {
     await API.deleteEvent(eventId, STATE.currentUser.id);
-    // app.js defines closeModal(); hideModal does not exist in this codebase
     closeModal('event-detail-modal');
     showNotification('Събитието е изтрито.');
     await loadCalendar();

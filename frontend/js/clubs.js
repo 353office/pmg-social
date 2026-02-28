@@ -1,4 +1,4 @@
-// CLUBS HANDLERS - ALL CALLABLE FROM HTML
+// CLUBS HANDLERS
 
 async function loadClubs() {
   const contentEl = document.getElementById('clubs-content');
@@ -50,7 +50,6 @@ async function loadClubsWidget() {
 }
 
 async function showClubDetail(clubId) {
-  // Prevent "flash" of previous club: show loading immediately and ignore stale responses
   const reqId = `${Date.now()}-${Math.random()}`;
   STATE._clubDetailReqId = reqId;
 

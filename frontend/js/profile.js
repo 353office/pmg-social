@@ -1,4 +1,4 @@
-// PROFILE & POST DETAIL PAGES
+// PROFILE AND POST DETAIL PAGES
 
 async function showUserProfile(userId) {
   const contentEl = document.getElementById('profile-content');

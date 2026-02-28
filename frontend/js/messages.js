@@ -1,4 +1,4 @@
-// MESSAGES HANDLERS - ALL CALLABLE FROM HTML
+// MESSAGES HANDLERS
 
 async function loadConversations() {
   if (!STATE.currentUser) return;

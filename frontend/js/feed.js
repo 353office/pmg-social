@@ -1,13 +1,11 @@
-// FEED - Posts with images and clickable elements
+// FEED
 
 function getCurrentFeedFilter() {
   const sel = document.getElementById('post-visibility');
-  // If the selector isn't present (e.g. some pages), default to showing everything available.
   return sel?.value || 'class';
 }
 
 function filterPostsForFeed(posts, filterValue) {
-  // The server already enforces visibility rules; this is purely a UI filter.
   // public: only public
   // grade: public + grade
   // class: public + grade + class (i.e. everything the user can see)
@@ -32,7 +30,7 @@ function renderFeedPosts(posts) {
 }
 
 function handleFeedFilterChange() {
-  // Re-render instantly from cached posts (no reload required)
+  // Re-render instantly from cached posts
   const filterValue = getCurrentFeedFilter();
   STATE.feedFilter = filterValue;
   const filtered = filterPostsForFeed(STATE.posts || [], filterValue);
