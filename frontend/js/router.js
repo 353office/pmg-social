@@ -10,7 +10,10 @@ function loadPage(page, param) {
   // Hide all pages
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   
-  // Update nav
+  
+  // Layout tweaks per page (e.g., hide right sidebar on Messages)
+  document.body.classList.toggle('page-messages', page === 'messages');
+// Update nav
   document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
   // NOTE: index 2 is the notifications dropdown (not a routed page), so items below shift by +1.
   const navMap = { home: 0, search: 1, calendar: 3, clubs: 4, messages: 5, admin: 6 };

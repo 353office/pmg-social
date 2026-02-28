@@ -178,6 +178,10 @@ async function handleDeleteClub(clubId) {
   try {
     await API.deleteClub(clubId, STATE.currentUser.id);
     showNotification('Клубът е изтрит.');
+
+    // Refresh sidebar widget immediately
+    try { await loadClubsWidget(); } catch {}
+
     navigateTo('clubs');
   } catch (error) {
     showError(error.message);

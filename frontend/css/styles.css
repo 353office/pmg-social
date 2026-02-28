@@ -1578,3 +1578,16 @@ body {
 @media (max-width: 900px){
   .messages-container{ grid-template-columns: 1fr; }
 }
+
+/* Messages page: hide right sidebar and expand main area */
+body.page-messages .right-sidebar {
+  display: none;
+}
+
+body.page-messages .container {
+  grid-template-columns: 280px 1fr;
+}
+
+body.page-messages .main-content {
+  min-height: calc(100vh - 40px);
+}

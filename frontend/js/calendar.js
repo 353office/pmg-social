@@ -138,3 +138,35 @@ async function handleDeleteEvent(eventId) {
     showError(error.message);
   }
 }
+
+
+function populateEventTimeSelect() {
+  const select = document.getElementById('event-time-select');
+  if (!select) return;
+
+  // Don't repopulate if already filled
+  if (select.options && select.options.length > 0) return;
+
+  // 24-hour options every 30 minutes: 00:00 → 23:30
+  for (let h = 0; h < 24; h++) {
+    for (let m = 0; m < 60; m += 30) {
+      const hh = String(h).padStart(2, '0');
+      const mm = String(m).padStart(2, '0');
+      const value = `${hh}:${mm}`;
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = value;
+      select.appendChild(opt);
+    }
+  }
+
+  // Default to next half-hour
+  const now = new Date();
+  const minutes = now.getMinutes();
+  const next = minutes < 30 ? '30' : '00';
+  const hour = (minutes < 30) ? now.getHours() : (now.getHours() + 1) % 24;
+  const defaultValue = `${String(hour).padStart(2,'0')}:${next}`;
+  select.value = defaultValue;
+}
+
+document.addEventListener('DOMContentLoaded', populateEventTimeSelect);
