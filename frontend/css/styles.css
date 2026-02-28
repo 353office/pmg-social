@@ -1053,10 +1053,15 @@ body {
 
 /* Messages page: use full available height */
 body.page-messages .messages-container {
-  height: calc(100vh - 180px);
-  min-height: 600px;
+  height: calc(100vh - 140px);
+  min-height: 650px;
 }
 
+
+/* Chat bubble: reserve space for time/delete on the right */
+.chat-messages .message{
+  padding-right: 44px;
+}
 /* Message delete button */
 .message {
   position: relative;
@@ -1584,10 +1589,20 @@ body.page-messages .messages-container {
 }
 
 .message-meta{
-  margin-top:6px;
+  position:absolute;
+  top:8px;
+  right:10px;
+  margin-top:0;
   font-size:11px;
   color:#6b7280;
   text-align:right;
+  opacity:1;
+  transition: opacity 0.15s ease;
+}
+
+/* When hovering a message, hide time so delete icon is unobstructed */
+.message:hover .message-meta{
+  opacity:0;
 }
 
 .chat-input-container{
