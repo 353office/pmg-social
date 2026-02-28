@@ -3,7 +3,9 @@
 function navigateTo(page, param) {
   let hash = `#/${page}`;
   if (param) hash += `/${param}`;
+  const same = window.location.hash === hash;
   window.location.hash = hash;
+  if (same && typeof loadPage === 'function') loadPage(page, param);
 }
 
 function loadPage(page, param) {
