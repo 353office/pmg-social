@@ -118,9 +118,10 @@ body {
 }
 
 .login-logo {
-  font-size: 64px;
+  height: 40px;
+  width: auto;
+  display: flex;
   text-align: center;
-  margin-bottom: 20px;
 }
 
 .login-title {
