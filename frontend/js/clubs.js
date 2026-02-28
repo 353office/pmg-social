@@ -13,7 +13,7 @@ async function loadClubs() {
     }
     
     contentEl.innerHTML = clubs.map(club => `
-      <div class="club-card" onclick="showClubDetail('${club.id}')">
+      <div class="club-card" onclick="navigateTo('club', '${club.id}')">
         <div class="club-icon">${getClubIcon(club.name)}</div>
         <div class="club-name">${escapeHtml(club.name)}</div>
         <div class="club-description">${escapeHtml(club.description || 'Без описание')}</div>
@@ -39,7 +39,7 @@ async function loadClubsWidget() {
     }
     
     widgetEl.innerHTML = clubs.slice(0, 5).map(club => `
-      <div class="widget-item" onclick="showClubDetail('${club.id}')">
+      <div class="widget-item" onclick="navigateTo('club', '${club.id}')">
         <div class="item-title">${getClubIcon(club.name)} ${escapeHtml(club.name)}</div>
         <div class="item-meta">${club.member_count} членове</div>
       </div>
@@ -72,6 +72,11 @@ async function showClubDetail(clubId) {
             `<button class="btn btn-danger" onclick="handleLeaveClub('${club.id}')">Напусни клуба</button>` :
             `<button class="btn btn-primary" onclick="handleJoinClub('${club.id}')">Присъедини се</button>`
           }
+
+          ${(club.leader_id === STATE.currentUser.id || STATE.currentUser.role === 'admin') ?
+            `<button class="btn btn-danger" style="margin-left: 10px;" onclick="handleDeleteClub('${club.id}')">Изтрий клуба</button>` :
+            ''
+          }
         </div>
       </div>
       
@@ -97,7 +102,6 @@ async function showClubDetail(clubId) {
       </div>
     `;
     
-    showPage('club-detail');
   } catch (error) {
     showError(error.message);
   }
@@ -119,7 +123,21 @@ async function handleLeaveClub(clubId) {
     try {
       await API.leaveClub(clubId, STATE.currentUser.id);
       showNotification('Напуснахте клуба');
-      showPage('clubs');
+      navigateTo('clubs');
+      await loadClubs();
+      await loadClubsWidget();
+    } catch (error) {
+      showError(error.message);
+    }
+  });
+}
+
+async function handleDeleteClub(clubId) {
+  confirmDeleteAction('Сигурни ли сте, че искате да изтриете този клуб?', async () => {
+    try {
+      await API.deleteClub(clubId, STATE.currentUser.id);
+      showNotification('Клубът е изтрит.');
+      navigateTo('clubs');
       await loadClubs();
       await loadClubsWidget();
     } catch (error) {

@@ -212,6 +212,13 @@ const API = {
       body: JSON.stringify({ user_id: userId })
     });
   },
+
+  async deleteClub(clubId, userId) {
+    return this.request(`/clubs/${clubId}`, {
+      method: 'DELETE',
+      body: JSON.stringify({ user_id: userId })
+    });
+  },
   
   // Messages
   async getConversations(userId) {
