@@ -14,9 +14,6 @@ app.listen(PORT, "0.0.0.0", () => {
   console.log(`
 listening on ${PORT}
 
-Server: http://localhost:${PORT}
-API:    http://localhost:${PORT}/api
-
 Example logins:  student_11а_1 / student123
         teacher_11а / teacher123
         admin / admin123
