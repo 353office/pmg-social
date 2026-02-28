@@ -118,11 +118,15 @@ body {
 }
 
 .login-logo {
-  height: 28px;
-  width: auto;
   display: flex;
+  justify-content: center;
   align-items: center;
-  padding: 10px;
+  margin-bottom: 12px;
+}
+
+.login-logo-img {
+  height: 40px;
+  width: auto;
 }
 
 .login-title {
