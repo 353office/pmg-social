@@ -101,12 +101,20 @@ async function handleCreateEvent(event) {
   event.preventDefault();
   
   const formData = new FormData(event.target);
+  // Force 24h format if time is provided (HH:MM)
+  const rawTime = (formData.get('event_time') || '').trim();
+  const timeValue = rawTime === '' ? null : rawTime;
+  if (timeValue && !/^([01]\d|2[0-3]):[0-5]\d$/.test(timeValue)) {
+    showError('Моля, въведете час във формат 24ч: HH:MM (напр. 14:30).');
+    return;
+  }
+
   const eventData = {
     title: formData.get('title'),
     description: formData.get('description'),
     location: formData.get('location'),
     event_date: formData.get('event_date'),
-    event_time: formData.get('event_time'),
+    event_time: timeValue,
     event_type: formData.get('event_type'),
     class_grade: formData.get('class_grade') || null,
     class_letter: formData.get('class_letter') || null,
@@ -130,7 +138,8 @@ async function handleDeleteEvent(eventId) {
   if (!confirm('Сигурни ли сте, че искате да изтриете това събитие?')) return;
   try {
     await API.deleteEvent(eventId, STATE.currentUser.id);
-    hideModal('event-detail-modal');
+    // app.js defines closeModal(); hideModal does not exist in this codebase
+    closeModal('event-detail-modal');
     showNotification('Събитието е изтрито.');
     await loadCalendar();
     await loadCalendarWidget();
@@ -139,34 +148,3 @@ async function handleDeleteEvent(eventId) {
   }
 }
 
-
-function populateEventTimeSelect() {
-  const select = document.getElementById('event-time-select');
-  if (!select) return;
-
-  // Don't repopulate if already filled
-  if (select.options && select.options.length > 0) return;
-
-  // 24-hour options every 30 minutes: 00:00 → 23:30
-  for (let h = 0; h < 24; h++) {
-    for (let m = 0; m < 60; m += 30) {
-      const hh = String(h).padStart(2, '0');
-      const mm = String(m).padStart(2, '0');
-      const value = `${hh}:${mm}`;
-      const opt = document.createElement('option');
-      opt.value = value;
-      opt.textContent = value;
-      select.appendChild(opt);
-    }
-  }
-
-  // Default to next half-hour
-  const now = new Date();
-  const minutes = now.getMinutes();
-  const next = minutes < 30 ? '30' : '00';
-  const hour = (minutes < 30) ? now.getHours() : (now.getHours() + 1) % 24;
-  const defaultValue = `${String(hour).padStart(2,'0')}:${next}`;
-  select.value = defaultValue;
-}
-
-document.addEventListener('DOMContentLoaded', populateEventTimeSelect);
