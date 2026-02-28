@@ -47,6 +47,7 @@ async function loadConversation(conversationId, conversationName) {
                 `<div class="message-sender">${escapeHtml(msg.sender_name)}</div>` : 
                 ''}
               <div class="message-content">${escapeHtml(msg.content)}</div>
+              ${msg.created_at ? `<div class="message-meta">${formatTime(msg.created_at)}</div>` : ``}
             </div>
           `).join('')
         }
@@ -160,5 +161,15 @@ async function createOrOpenConversation(userId, userName) {
     // Conversation might already exist, just load conversations
     showPage('messages');
     await loadConversations();
+  }
+}
+
+
+function formatTime(iso) {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return '';
   }
 }

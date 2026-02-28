@@ -178,6 +178,13 @@ const API = {
       body: JSON.stringify(eventData)
     });
   },
+
+  async deleteEvent(eventId, userId) {
+    return this.request(`/calendar/${eventId}`, {
+      method: 'DELETE',
+      body: JSON.stringify({ user_id: userId })
+    });
+  },
   
   // Clubs
   async getClubs() {
@@ -186,6 +193,13 @@ const API = {
   
   async getClub(clubId) {
     return this.request(`/clubs/${clubId}`);
+  },
+
+  async deleteClub(clubId, userId) {
+    return this.request(`/clubs/${clubId}`, {
+      method: 'DELETE',
+      body: JSON.stringify({ user_id: userId })
+    });
   },
   
   async checkMembership(clubId, userId) {
@@ -208,13 +222,6 @@ const API = {
   
   async leaveClub(clubId, userId) {
     return this.request(`/clubs/${clubId}/leave`, {
-      method: 'DELETE',
-      body: JSON.stringify({ user_id: userId })
-    });
-  },
-
-  async deleteClub(clubId, userId) {
-    return this.request(`/clubs/${clubId}`, {
       method: 'DELETE',
       body: JSON.stringify({ user_id: userId })
     });

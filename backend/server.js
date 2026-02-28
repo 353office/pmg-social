@@ -892,6 +892,31 @@ app.get('/api/calendar/:id', async (req, res) => {
   }
 });
 
+app.delete('/api/calendar/:id', async (req, res) => {
+  try {
+    const { user_id } = req.body || {};
+    if (!user_id) return res.status(400).json({ error: 'user_id is required' });
+
+    const user = await db.prepare('SELECT id, role FROM users WHERE id = ?').get(user_id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const event = await db.prepare('SELECT id, created_by FROM calendar_events WHERE id = ?').get(req.params.id);
+    if (!event) return res.status(404).json({ error: 'Event not found' });
+
+    const isAdmin = user.role === 'admin';
+    const isCreator = event.created_by === user.id;
+
+    if (!isAdmin && !isCreator) {
+      return res.status(403).json({ error: 'Not authorized to delete this event' });
+    }
+
+    await db.prepare('DELETE FROM calendar_events WHERE id = ?').run(req.params.id);
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.post('/api/calendar', async (req, res) => {
   try {
     const { title, description, location, event_date, event_time, event_type, class_grade, class_letter, created_by } = req.body;
@@ -955,6 +980,33 @@ app.get('/api/clubs/:id', async (req, res) => {
   }
 });
 
+app.delete('/api/clubs/:clubId', async (req, res) => {
+  try {
+    const { user_id } = req.body || {};
+    if (!user_id) return res.status(400).json({ error: 'user_id is required' });
+
+    const user = await db.prepare('SELECT id, role FROM users WHERE id = ?').get(user_id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const club = await db.prepare('SELECT id, leader_id FROM clubs WHERE id = ?').get(req.params.clubId);
+    if (!club) return res.status(404).json({ error: 'Club not found' });
+
+    const isAdmin = user.role === 'admin';
+    const isLeader = club.leader_id === user.id;
+
+    if (!isAdmin && !isLeader) {
+      return res.status(403).json({ error: 'Not authorized to delete this club' });
+    }
+
+    await db.prepare('DELETE FROM club_members WHERE club_id = ?').run(club.id);
+    await db.prepare('DELETE FROM clubs WHERE id = ?').run(club.id);
+
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.get('/api/clubs/:clubId/is-member/:userId', async (req, res) => {
   try {
     const member = await db.prepare('SELECT * FROM club_members WHERE club_id = ? AND user_id = ?').get(req.params.clubId, req.params.userId);
@@ -1004,34 +1056,6 @@ app.delete('/api/clubs/:clubId/leave', async (req, res) => {
     await db.prepare('DELETE FROM club_members WHERE club_id = ? AND user_id = ?').run(req.params.clubId, user_id);
 
     res.json({ message: 'Left club' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Delete club (leader or admin only)
-app.delete('/api/clubs/:clubId', async (req, res) => {
-  try {
-    const { user_id } = req.body;
-    if (!user_id) return res.status(400).json({ error: 'user_id is required' });
-
-    const club = await db.prepare('SELECT id, leader_id FROM clubs WHERE id = ?').get(req.params.clubId);
-    if (!club) return res.status(404).json({ error: 'Club not found' });
-
-    const user = await db.prepare('SELECT id, role FROM users WHERE id = ?').get(user_id);
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    const isAdmin = user.role === 'admin';
-    const isLeader = club.leader_id === user_id;
-    if (!isAdmin && !isLeader) {
-      return res.status(403).json({ error: 'Not allowed to delete this club' });
-    }
-
-    // Remove members first (safe even if FK cascade exists)
-    await db.prepare('DELETE FROM club_members WHERE club_id = ?').run(req.params.clubId);
-    await db.prepare('DELETE FROM clubs WHERE id = ?').run(req.params.clubId);
-
-    res.json({ message: 'Club deleted' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

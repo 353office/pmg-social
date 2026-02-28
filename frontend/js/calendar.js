@@ -57,7 +57,8 @@ async function loadCalendarWidget() {
 async function showEventDetail(eventId) {
   try {
     const event = await API.getEvent(eventId);
-    
+    const canDelete = (event.created_by === STATE.currentUser.id) || (STATE.currentUser.role === 'admin');
+
     document.getElementById('event-detail-title').textContent = event.title;
     document.getElementById('event-detail-body').innerHTML = `
       <div style="display: grid; gap: 12px;">
@@ -68,6 +69,11 @@ async function showEventDetail(eventId) {
         ${event.class_grade ? `<div><strong>Клас:</strong> ${event.class_grade}${event.class_letter}</div>` : '<div><strong>За:</strong> Цялото училище</div>'}
         ${event.description ? `<div><strong>Описание:</strong><br>${escapeHtml(event.description)}</div>` : ''}
         <div><strong>Създадено от:</strong> ${escapeHtml(event.created_by_name)}</div>
+        ${canDelete ? `
+          <div style="margin-top:8px;">
+            <button class="btn btn-danger" onclick="handleDeleteEvent('${event.id}')">Изтрий събитието</button>
+          </div>
+        ` : ''}
       </div>
     `;
     
@@ -114,6 +120,20 @@ async function handleCreateEvent(event) {
     await loadCalendar();
     await loadCalendarWidget();
     showNotification('Събитието е създадено!');
+  } catch (error) {
+    showError(error.message);
+  }
+}
+
+
+async function handleDeleteEvent(eventId) {
+  if (!confirm('Сигурни ли сте, че искате да изтриете това събитие?')) return;
+  try {
+    await API.deleteEvent(eventId, STATE.currentUser.id);
+    hideModal('event-detail-modal');
+    showNotification('Събитието е изтрито.');
+    await loadCalendar();
+    await loadCalendarWidget();
   } catch (error) {
     showError(error.message);
   }
