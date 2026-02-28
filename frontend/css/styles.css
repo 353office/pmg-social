@@ -214,6 +214,11 @@ body {
   padding: 20px 0;
 }
 
+.site-logo {
+  height: 40px;
+  object-fit: contain;
+}
+
 .logo {
  display: flex;
  align-items: center
