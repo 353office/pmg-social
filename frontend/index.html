@@ -45,7 +45,7 @@
     <div class="container">
       <!-- Left Sidebar -->
       <aside class="sidebar">
-        <div class="logo"><i data-lucide="school"></i> <span>Училище</span></div>
+        <div class="logo"><img src="assets/logo.png" alt="PMGsocial" class="site-logo"></div>
         
         <div class="user-info">
           <img id="user-avatar" class="user-avatar" src="" alt="Avatar" onclick="navigateTo('profile', window.STATE.currentUser.id)">
@@ -84,12 +84,12 @@
           </div>
           
           <div class="nav-item" onclick="navigateTo('messages')">
-            <span class="icon">✉️</span>
+            <span class="icon"><i data-lucide="messages-square"></i></span>
             <span>Съобщения</span>
           </div>
           
           <div class="nav-item" id="admin-nav" onclick="navigateTo('admin')" style="display: none;">
-            <span class="icon">⚙️</span>
+            <span class="icon"><i data-lucide="shield-check"></i></span>
             <span>Управление</span>
           </div>
         </nav>
