@@ -1590,7 +1590,7 @@ body.page-messages .messages-container {
 
 .message-meta{
   position:absolute;
-  top:8px;
+  top:1px;
   right:10px;
   margin-top:0;
   font-size:11px;
