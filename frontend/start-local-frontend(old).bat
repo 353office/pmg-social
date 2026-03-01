@@ -1,7 +1,7 @@
 @echo off
-echo ======================================
-echo   PULSE Social Media - Frontend
-echo ======================================
+echo
+echo
+echo
 echo.
 
 REM Check if Python is installed
@@ -10,7 +10,7 @@ if %ERRORLEVEL% EQU 0 (
     echo [OK] Python is installed
     echo Starting web server on http://localhost:8080
     echo.
-    echo Open your browser and go to: http://localhost:8080/index-vanilla.html
+    echo Open your browser and go to: http://localhost:8080/index.html
     echo.
     echo Press Ctrl+C to stop the server
     echo.
@@ -39,7 +39,7 @@ REM If neither Python nor Node.js found
 echo [INFO] No web server found
 echo.
 echo OPTION 1: Just open the HTML file directly
-echo Right-click on "index-vanilla.html" and choose "Open with" > Your browser
+echo Right-click on "index.html" and choose "Open with" > Your browser
 echo.
 echo OPTION 2: Install Python or Node.js
 echo - Python: https://www.python.org/downloads/
