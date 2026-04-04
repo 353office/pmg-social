@@ -93,7 +93,7 @@ function renderPostSync(post) {
           <span id="comment-count-${post.id}">${post.comment_count || 0}</span>
         </div>
         <div class="post-action" id="like-action-${post.id}" onclick="event.stopPropagation(); handleToggleLike('${post.id}')">
-          <span>🤍</span>
+          <span class="like-icon">🤍</span>
           <span id="like-count-${post.id}">${post.like_count || 0}</span>
         </div>
       </div>
@@ -166,8 +166,8 @@ async function renderPost(post) {
           <span>💬</span>
           <span>${comments.length}</span>
         </div>
-        <div class="post-action ${isLiked ? 'liked' : ''}" onclick="event.stopPropagation(); handleToggleLike('${post.id}')">
-          <span>${isLiked ? '❤️' : '🤍'}</span>
+        <div class="post-action ${isLiked ? 'liked' : ''}" id="like-action-${post.id}" onclick="event.stopPropagation(); handleToggleLike('${post.id}')">
+          <span class="like-icon">${isLiked ? '❤️' : '🤍'}</span>
           <span id="like-count-${post.id}">${post.like_count || 0}</span>
         </div>
       </div>
@@ -217,12 +217,67 @@ async function handleDeletePost(postId) {
 }
 
 // Like toggle
+function updateCachedPostLikeState(postId, liked, resolvedCount = null) {
+  if (Array.isArray(STATE.posts)) {
+    const cachedPost = STATE.posts.find(p => String(p.id) === String(postId));
+    if (cachedPost) {
+      if (resolvedCount != null) {
+        cachedPost.like_count = Math.max(0, Number(resolvedCount) || 0);
+      }
+      cachedPost.__liked = liked;
+    }
+  }
+}
+
+function applyPostLikeState(postId, liked, explicitCount = null) {
+  const likeAction = document.getElementById(`like-action-${postId}`);
+  const likeCountEl = document.getElementById(`like-count-${postId}`);
+  const detailStatEl = document.getElementById(`post-detail-like-count-${postId}`);
+
+  let currentCount = likeCountEl ? Number(likeCountEl.textContent || 0) : null;
+  if (!Number.isFinite(currentCount)) currentCount = 0;
+  const resolvedCount = explicitCount == null
+    ? Math.max(0, currentCount + (liked ? 1 : -1))
+    : Math.max(0, Number(explicitCount) || 0);
+
+  if (likeAction) {
+    likeAction.classList.toggle('liked', !!liked);
+    const iconEl = likeAction.querySelector('.like-icon') || likeAction.querySelector('span');
+    if (iconEl) iconEl.textContent = liked ? '❤️' : '🤍';
+    if (likeAction.dataset.busy === '1') likeAction.classList.remove('busy');
+  }
+  if (likeCountEl) likeCountEl.textContent = resolvedCount;
+  if (detailStatEl) detailStatEl.textContent = resolvedCount;
+
+  updateCachedPostLikeState(postId, liked, resolvedCount);
+}
+
 async function handleToggleLike(postId) {
+  const likeAction = document.getElementById(`like-action-${postId}`);
+  if (likeAction?.dataset.busy === '1') return;
+
+  const wasLiked = likeAction ? likeAction.classList.contains('liked') : false;
+  const currentCountEl = document.getElementById(`like-count-${postId}`);
+  const currentCount = currentCountEl ? Number(currentCountEl.textContent || 0) : 0;
+
+  if (likeAction) {
+    likeAction.dataset.busy = '1';
+    likeAction.classList.add('busy');
+  }
+
+  applyPostLikeState(postId, !wasLiked, Math.max(0, currentCount + (!wasLiked ? 1 : -1)));
+
   try {
-    await API.toggleLike(postId, STATE.currentUser.id);
-    await refreshCurrentView(postId);
+    const result = await API.toggleLike(postId, STATE.currentUser.id);
+    applyPostLikeState(postId, !!result.liked);
   } catch (error) {
+    applyPostLikeState(postId, wasLiked, currentCount);
     showError(error.message);
+  } finally {
+    if (likeAction) {
+      likeAction.dataset.busy = '0';
+      likeAction.classList.remove('busy');
+    }
   }
 }
 

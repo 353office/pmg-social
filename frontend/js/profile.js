@@ -119,7 +119,7 @@ async function showPostDetail(postId) {
           
           <div class="post-detail-stats">
             <div class="post-detail-stat">
-              <strong>${post.like_count}</strong> харесвания
+              <strong id="post-detail-like-count-${post.id}">${post.like_count}</strong> харесвания
             </div>
             <div class="post-detail-stat">
               <strong>${comments.length}</strong> коментара
@@ -127,8 +127,8 @@ async function showPostDetail(postId) {
           </div>
           
           <div class="post-actions">
-            <div class="post-action ${isLiked ? 'liked' : ''}" onclick="handleToggleLike('${post.id}')">
-              <span>${isLiked ? '❤️' : '🤍'}</span>
+            <div class="post-action ${isLiked ? 'liked' : ''}" id="like-action-${post.id}" onclick="handleToggleLike('${post.id}')">
+              <span class="like-icon">${isLiked ? '❤️' : '🤍'}</span>
               <span id="like-count-${post.id}">${post.like_count}</span>
             </div>
           </div>
