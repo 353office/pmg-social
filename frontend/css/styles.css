@@ -1698,3 +1698,176 @@ body[data-accent='blue'] { --accent: #1d9bf0; --accent-hover: #1a8cd8; }
   .mobile-nav-item svg { width: 18px; height: 18px; }
   .notifications-dropdown { position: fixed; left: 12px; right: 12px; top: 12px; width: auto; max-height: 70vh; }
 }
+
+
+/* Theme and accent override layer */
+body[data-accent='red'] { --accent: #ef4444; --accent-hover: #dc2626; }
+body[data-accent='rose'] { --accent: #ef4444; --accent-hover: #dc2626; }
+body[data-theme='light'] {
+  --bg: #f4f7fb;
+  --surface: #ffffff;
+  --surface-2: #edf2f7;
+  --text: #0f1720;
+  --muted: #5b6b7b;
+  --border: #d7e0e8;
+}
+body,
+#main-app,
+.login-box,
+.main-content,
+.page-header,
+.post-composer,
+.post,
+.user-info,
+.widget,
+.notifications-dropdown,
+.notification,
+.modal-content,
+.messages-container,
+.conversations-list,
+.chat-area,
+.profile-header,
+.profile-details,
+.calendar-card,
+.club-card,
+.search-box,
+.settings-card,
+.notif-header,
+.notif-item,
+.widget-item,
+.logout-btn,
+.visibility-select {
+  color: var(--text);
+  border-color: var(--border);
+}
+body,
+#main-app,
+.main-content,
+.page-header {
+  background: var(--bg);
+}
+.login-box,
+.user-info,
+.widget,
+.notifications-dropdown,
+.notification,
+.modal-content,
+.messages-container,
+.conversations-list,
+.chat-area,
+.profile-header,
+.profile-details,
+.calendar-card,
+.club-card,
+.search-box,
+.post-composer,
+.post,
+.logout-btn,
+.visibility-select,
+.form-input,
+.btn-secondary,
+.settings-card {
+  background: var(--surface);
+}
+.page-header,
+.post-composer,
+.post,
+.widget-header,
+.widget-item,
+.notif-header,
+.notif-item,
+.logout-btn,
+.form-input,
+.visibility-select,
+.btn-secondary,
+.user-info,
+.widget,
+.notification,
+.modal-content,
+.search-box,
+.calendar-card,
+.club-card,
+.profile-header,
+.profile-details {
+  border-color: var(--border);
+}
+.sidebar .logo,
+.sidebar,
+.right-sidebar { color: var(--text); }
+.page-title,
+.user-name,
+.notif-header h3,
+.widget-header h3,
+.form-label,
+.login-title,
+.nav-item,
+.mobile-nav-item,
+.composer-input,
+.composer-input::placeholder,
+.post-author,
+.post-content,
+.btn-secondary,
+.logout-btn {
+  color: var(--text);
+}
+.user-role,
+.author-meta,
+.login-subtitle,
+.empty-state,
+.loading,
+.comment-meta,
+.notif-preview,
+.notif-time,
+.widget-content,
+.composer-input::placeholder {
+  color: var(--muted);
+}
+.nav-item:hover,
+.btn-icon:hover,
+.notif-item:hover,
+.widget-item:hover,
+.visibility-select:hover,
+.logout-btn:hover,
+.btn-secondary:hover {
+  background: var(--surface-2);
+}
+.nav-item.active,
+.notif-item.unread,
+.btn-text:hover {
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  color: var(--accent);
+}
+.btn-text,
+.nav-item.active .icon,
+a,
+.link,
+.form-input:focus,
+.visibility-select:focus {
+  color: var(--accent);
+}
+.btn-primary,
+.login-btn,
+.notif-badge {
+  background: var(--accent) !important;
+  color: white !important;
+}
+.btn-primary:hover,
+.login-btn:hover { background: var(--accent-hover) !important; }
+.form-input:focus,
+.visibility-select:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+body[data-theme='dark'] .main-content,
+body[data-theme='dark'] .page-header,
+body[data-theme='dark'] .post:hover,
+body[data-theme='dark'] .notif-item:hover,
+body[data-theme='dark'] .widget-item:hover,
+body[data-theme='dark'] .btn-secondary:hover,
+body[data-theme='dark'] .logout-btn:hover,
+body[data-theme='dark'] .visibility-select:hover {
+  background: var(--surface-2);
+}
+body[data-theme='dark'] .site-logo {
+  filter: brightness(0) invert(1);
+}

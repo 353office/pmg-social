@@ -1,7 +1,7 @@
 // GLOBAL STATE
 window.STATE = {
   currentUser: null,
-  token: null,
+  token: localStorage.getItem('school_session_token'),
   pending2FAToken: null,
   preferences: { theme: 'light', accentColor: 'blue', twoFactorEnabled: false },
   posts: [],
@@ -25,6 +25,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (parts.length > 0) loadPage(parts[0], parts[1]);
     else navigateTo('home');
   } catch (error) {
+    STATE.token = null;
+    localStorage.removeItem('school_session_token');
     showLogin();
   }
 });
@@ -203,14 +205,19 @@ function getClubIcon(clubName) {
 }
 
 
+function normalizeAccent(accentColor) {
+  if (accentColor === 'red') return 'rose';
+  return accentColor || 'blue';
+}
+
 function applyPreferences(theme, accentColor) {
   document.body.dataset.theme = theme || 'light';
-  document.body.dataset.accent = accentColor || 'blue';
+  document.body.dataset.accent = normalizeAccent(accentColor);
 }
 
 function applyPreferencesFromStorage() {
   const theme = localStorage.getItem('school_theme') || 'light';
-  const accentColor = localStorage.getItem('school_accent') || 'blue';
+  const accentColor = normalizeAccent(localStorage.getItem('school_accent') || 'blue');
   STATE.preferences.theme = theme;
   STATE.preferences.accentColor = accentColor;
   applyPreferences(theme, accentColor);
@@ -221,10 +228,10 @@ async function loadUserPreferences() {
   try {
     const prefs = await API.getPreferences();
     STATE.preferences.theme = prefs.theme || 'light';
-    STATE.preferences.accentColor = prefs.accent_color || 'blue';
+    STATE.preferences.accentColor = normalizeAccent(prefs.accent_color || 'blue');
     STATE.preferences.twoFactorEnabled = !!prefs.two_factor_enabled;
     localStorage.setItem('school_theme', STATE.preferences.theme);
-    localStorage.setItem('school_accent', STATE.preferences.accentColor);
+    localStorage.setItem('school_accent', normalizeAccent(STATE.preferences.accentColor));
     applyPreferences(STATE.preferences.theme, STATE.preferences.accentColor);
     syncSettingsUI();
   } catch (error) {
@@ -254,11 +261,11 @@ async function handleThemeChange(value) {
 }
 
 async function handleAccentChange(value) {
-  STATE.preferences.accentColor = value;
-  localStorage.setItem('school_accent', value);
-  applyPreferences(STATE.preferences.theme, value);
+  STATE.preferences.accentColor = normalizeAccent(value);
+  localStorage.setItem('school_accent', normalizeAccent(value));
+  applyPreferences(STATE.preferences.theme, STATE.preferences.accentColor);
   syncSettingsUI();
-  try { await API.savePreferences(STATE.preferences.theme, value); } catch (error) { console.error(error); }
+  try { await API.savePreferences(STATE.preferences.theme, STATE.preferences.accentColor); } catch (error) { console.error(error); }
 }
 
 async function handleSetup2FA() {

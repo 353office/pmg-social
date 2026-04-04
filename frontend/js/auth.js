@@ -19,6 +19,10 @@ async function handleLogin(event) {
       return;
     }
     STATE.currentUser = result.user;
+    if (result.session_token) {
+      STATE.token = result.session_token;
+      localStorage.setItem('school_session_token', result.session_token);
+    }
     await afterSuccessfulLogin();
   } catch (error) {
     errorEl.textContent = error.message || 'Грешно потребителско име или парола';
@@ -33,6 +37,10 @@ async function handleTwoFactorSubmit() {
   try {
     const result = await API.loginTwoFactor(STATE.pending2FAToken, code);
     STATE.currentUser = result.user;
+    if (result.session_token) {
+      STATE.token = result.session_token;
+      localStorage.setItem('school_session_token', result.session_token);
+    }
     STATE.pending2FAToken = null;
     await afterSuccessfulLogin();
   } catch (error) {
@@ -63,6 +71,8 @@ function resetLoginForm() {
 async function handleLogout() {
   try { await API.logout(); } catch (error) { console.error('Logout error:', error); }
   STATE.currentUser = null;
+  STATE.token = null;
+  localStorage.removeItem('school_session_token');
   STATE.posts = [];
   document.getElementById('username').value = '';
   document.getElementById('password').value = '';

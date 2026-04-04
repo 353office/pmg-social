@@ -3,10 +3,12 @@ const API = {
 
   async request(endpoint, options = {}) {
     const url = `${this.BASE_URL}${endpoint}`;
+    const sessionToken = localStorage.getItem('school_session_token');
     const config = {
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        ...(sessionToken ? { 'X-Session-Token': sessionToken } : {}),
         ...options.headers
       },
       ...options

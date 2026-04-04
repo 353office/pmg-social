@@ -28,6 +28,7 @@ app.use(cors({
     return cb(null, allowed.includes(origin));
   },
   credentials: true,
+  allowedHeaders: ['Content-Type', 'X-Session-Token', 'Authorization'],
 }));
 app.use(express.json());
 
@@ -65,6 +66,16 @@ function setSessionCookie(req, res, token) {
   ];
   if (!isLocal || isSecureCookieRequest(req)) attrs.push('Secure');
   res.setHeader('Set-Cookie', attrs.join('; '));
+}
+
+
+function getSessionTokenFromRequest(req) {
+  const cookies = parseCookies(req);
+  const cookieToken = cookies.school_session;
+  const headerToken = req.headers['x-session-token'];
+  const authHeader = req.headers.authorization || '';
+  const bearerToken = authHeader.toLowerCase().startsWith('bearer ') ? authHeader.slice(7).trim() : '';
+  return cookieToken || headerToken || bearerToken || null;
 }
 
 function clearSessionCookie(req, res) {
@@ -129,8 +140,7 @@ function verifyTotp(secret, code, windowSize = 1) {
 }
 
 async function getAuthUser(req) {
-  const cookies = parseCookies(req);
-  const token = cookies.school_session;
+  const token = getSessionTokenFromRequest(req);
   if (!token) return null;
   return db.prepare(`
     SELECT u.*, s.token as session_token, s.expires_at
@@ -522,7 +532,7 @@ app.post('/api/login', async (req, res) => {
     const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
     await db.prepare('INSERT INTO sessions (id, user_id, token, expires_at) VALUES (?, ?, ?, ?)').run(uuidv4(), user.id, token, expires);
     setSessionCookie(req, res, token);
-    res.json({ user: buildSanitizedUser(user) });
+    res.json({ user: buildSanitizedUser(user), session_token: token });
   } catch (error) { res.status(500).json({ error: error.message }); }
 });
 
@@ -545,7 +555,7 @@ app.post('/api/login/2fa', async (req, res) => {
     const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
     await db.prepare('INSERT INTO sessions (id, user_id, token, expires_at) VALUES (?, ?, ?, ?)').run(uuidv4(), user.id, token, expires);
     setSessionCookie(req, res, token);
-    res.json({ user: buildSanitizedUser(user) });
+    res.json({ user: buildSanitizedUser(user), session_token: token });
   } catch (error) { res.status(500).json({ error: error.message }); }
 });
 
@@ -553,8 +563,8 @@ app.get('/api/verify-session', authMiddleware, async (req, res) => res.json({ us
 
 app.post('/api/logout', async (req, res) => {
   try {
-    const cookies = parseCookies(req);
-    if (cookies.school_session) await db.prepare('DELETE FROM sessions WHERE token = ?').run(cookies.school_session);
+    const token = getSessionTokenFromRequest(req);
+    if (token) await db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
     clearSessionCookie(req, res);
     res.json({ message: 'Logged out' });
   } catch (error) { res.status(500).json({ error: error.message }); }
@@ -567,9 +577,10 @@ app.get('/api/me/preferences', authMiddleware, async (req, res) => {
 app.patch('/api/me/preferences', authMiddleware, async (req, res) => {
   try {
     const allowedThemes = new Set(['light', 'dark']);
-    const allowedAccents = new Set(['blue', 'purple', 'green', 'orange', 'rose']);
+    const allowedAccents = new Set(['blue', 'purple', 'green', 'orange', 'rose', 'red']);
     const theme = allowedThemes.has(req.body.theme) ? req.body.theme : (req.user.theme || 'light');
-    const accent = allowedAccents.has(req.body.accent_color) ? req.body.accent_color : (req.user.accent_color || 'blue');
+    const rawAccent = allowedAccents.has(req.body.accent_color) ? req.body.accent_color : (req.user.accent_color || 'blue');
+    const accent = rawAccent === 'red' ? 'rose' : rawAccent;
     await db.prepare('UPDATE users SET theme = ?, accent_color = ? WHERE id = ?').run(theme, accent, req.user.id);
     res.json({ theme, accent_color: accent, two_factor_enabled: !!req.user.two_factor_enabled });
   } catch (error) { res.status(500).json({ error: error.message }); }
