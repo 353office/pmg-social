@@ -36,7 +36,7 @@ async function showUserProfile(userId) {
         </div>
         
         ${isOwnProfile ? 
-          `<button class="btn btn-primary" onclick="showEditProfileModal()">Редактирай профил</button>` :
+          `<div class="profile-actions"><button class="btn btn-primary" onclick="showEditProfileModal()">Редактирай профил</button><button class="btn btn-secondary" onclick="openSettingsModal()">Настройки</button></div>` :
           ''
         }
       </div>

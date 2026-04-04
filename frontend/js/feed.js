@@ -196,7 +196,7 @@ async function handleCreatePost() {
     document.getElementById('post-image-url').value = '';
     document.getElementById('post-button').disabled = true;
     
-    await loadFeed();
+    await refreshCurrentView();
     showNotification('Публикацията е добавена!');
   } catch (error) {
     showError(error.message);
@@ -208,7 +208,7 @@ async function handleDeletePost(postId) {
   confirmDeleteAction('Сигурни ли сте, че искате да изтриете тази публикация?', async () => {
     try {
       await API.deletePost(postId, STATE.currentUser.id);
-      await loadFeed();
+      await refreshCurrentView();
       showNotification('Публикацията е изтрита');
     } catch (error) {
       showError(error.message);
@@ -219,22 +219,8 @@ async function handleDeletePost(postId) {
 // Like toggle
 async function handleToggleLike(postId) {
   try {
-    const result = await API.toggleLike(postId, STATE.currentUser.id);
-    
-    const likeAction = document.getElementById(`like-action-${postId}`);
-    const likeCount = document.getElementById(`like-count-${postId}`);
-    
-    if (likeAction && likeCount) {
-      if (result.liked) {
-        likeAction.classList.add('liked');
-        likeAction.querySelector('span').textContent = '❤️';
-        likeCount.textContent = parseInt(likeCount.textContent) + 1;
-      } else {
-        likeAction.classList.remove('liked');
-        likeAction.querySelector('span').textContent = '🤍';
-        likeCount.textContent = parseInt(likeCount.textContent) - 1;
-      }
-    }
+    await API.toggleLike(postId, STATE.currentUser.id);
+    await refreshCurrentView(postId);
   } catch (error) {
     showError(error.message);
   }
@@ -252,7 +238,7 @@ async function handleAddComment(postId) {
     input.value = '';
     
     // Reload the post detail page
-    showPostDetail(postId);
+    await refreshCurrentView(postId);
     showNotification('Коментарът е добавен');
   } catch (error) {
     showError(error.message);
@@ -264,7 +250,7 @@ async function handleDeleteComment(commentId, postId) {
   confirmDeleteAction('Изтрий този коментар?', async () => {
     try {
       await API.deleteComment(commentId, STATE.currentUser.id);
-      showPostDetail(postId);
+      await refreshCurrentView(postId);
       showNotification('Коментарът е изтрит');
     } catch (error) {
       showError(error.message);

@@ -2,6 +2,8 @@
 window.STATE = {
   currentUser: null,
   token: null,
+  pending2FAToken: null,
+  preferences: { theme: 'light', accentColor: 'blue', twoFactorEnabled: false },
   posts: [],
   currentPage: 'home',
   currentConversation: null,
@@ -13,28 +15,16 @@ const DEFAULT_AVATAR = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.
 
 // INIT
 document.addEventListener('DOMContentLoaded', async () => {
-  const token = localStorage.getItem('token');
-  
-  if (token) {
-    try {
-      const { user } = await API.verifySession(token);
-      STATE.currentUser = user;
-      STATE.token = token;
-      showApp();
-      
-      // Load route from hash
-      const hash = window.location.hash.slice(2); // Remove #/
-      const parts = hash.split('/').filter(Boolean);
-      if (parts.length > 0) {
-        loadPage(parts[0], parts[1]);
-      } else {
-        navigateTo('home');
-      }
-    } catch (error) {
-      localStorage.removeItem('token');
-      showLogin();
-    }
-  } else {
+  applyPreferencesFromStorage();
+  try {
+    const { user } = await API.verifySession();
+    STATE.currentUser = user;
+    showApp();
+    const hash = window.location.hash.slice(2);
+    const parts = hash.split('/').filter(Boolean);
+    if (parts.length > 0) loadPage(parts[0], parts[1]);
+    else navigateTo('home');
+  } catch (error) {
     showLogin();
   }
 });
@@ -90,6 +80,8 @@ function showApp() {
     if (addClubBtn) addClubBtn.style.display = 'none';
   }
   
+  loadUserPreferences();
+
   // Load widgets
   loadCalendarWidget();
   loadClubsWidget();
@@ -208,4 +200,112 @@ function getClubIcon(clubName) {
     'Еко клуб': '🌱'
   };
   return icons[clubName] || '🎯';
+}
+
+
+function applyPreferences(theme, accentColor) {
+  document.body.dataset.theme = theme || 'light';
+  document.body.dataset.accent = accentColor || 'blue';
+}
+
+function applyPreferencesFromStorage() {
+  const theme = localStorage.getItem('school_theme') || 'light';
+  const accentColor = localStorage.getItem('school_accent') || 'blue';
+  STATE.preferences.theme = theme;
+  STATE.preferences.accentColor = accentColor;
+  applyPreferences(theme, accentColor);
+}
+
+async function loadUserPreferences() {
+  applyPreferencesFromStorage();
+  try {
+    const prefs = await API.getPreferences();
+    STATE.preferences.theme = prefs.theme || 'light';
+    STATE.preferences.accentColor = prefs.accent_color || 'blue';
+    STATE.preferences.twoFactorEnabled = !!prefs.two_factor_enabled;
+    localStorage.setItem('school_theme', STATE.preferences.theme);
+    localStorage.setItem('school_accent', STATE.preferences.accentColor);
+    applyPreferences(STATE.preferences.theme, STATE.preferences.accentColor);
+    syncSettingsUI();
+  } catch (error) {
+    console.error('Preferences error:', error);
+  }
+}
+
+function syncSettingsUI() {
+  const themeSelect = document.getElementById('theme-select');
+  const accentButtons = document.querySelectorAll('.accent-swatch');
+  if (themeSelect) themeSelect.value = STATE.preferences.theme || 'light';
+  accentButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.accent === STATE.preferences.accentColor));
+  const status = document.getElementById('twofa-status');
+  if (status) status.textContent = STATE.preferences.twoFactorEnabled ? 'Включена' : 'Изключена';
+}
+
+function openSettingsModal() {
+  syncSettingsUI();
+  showModal('settings-modal');
+}
+
+async function handleThemeChange(value) {
+  STATE.preferences.theme = value;
+  localStorage.setItem('school_theme', value);
+  applyPreferences(value, STATE.preferences.accentColor);
+  try { await API.savePreferences(value, STATE.preferences.accentColor); } catch (error) { console.error(error); }
+}
+
+async function handleAccentChange(value) {
+  STATE.preferences.accentColor = value;
+  localStorage.setItem('school_accent', value);
+  applyPreferences(STATE.preferences.theme, value);
+  syncSettingsUI();
+  try { await API.savePreferences(STATE.preferences.theme, value); } catch (error) { console.error(error); }
+}
+
+async function handleSetup2FA() {
+  try {
+    const setup = await API.setup2FA();
+    document.getElementById('twofa-secret').textContent = setup.secret;
+    document.getElementById('twofa-uri').value = setup.otpauth_url;
+    document.getElementById('twofa-setup-box').classList.remove('hidden');
+  } catch (error) {
+    showError(error.message);
+  }
+}
+
+async function handleVerify2FASetup() {
+  try {
+    const code = document.getElementById('twofa-verify-code').value.trim();
+    await API.verify2FASetup(code);
+    STATE.preferences.twoFactorEnabled = true;
+    document.getElementById('twofa-setup-box').classList.add('hidden');
+    document.getElementById('twofa-verify-code').value = '';
+    syncSettingsUI();
+    showNotification('2FA е включена');
+  } catch (error) {
+    showError(error.message);
+  }
+}
+
+async function handleDisable2FA() {
+  const password = prompt('Въведи паролата си, за да изключиш 2FA');
+  if (!password) return;
+  try {
+    await API.disable2FA(password);
+    STATE.preferences.twoFactorEnabled = false;
+    syncSettingsUI();
+    showNotification('2FA е изключена');
+  } catch (error) {
+    showError(error.message);
+  }
+}
+
+async function refreshCurrentView(postId = null) {
+  const hash = window.location.hash.slice(2);
+  const parts = hash.split('/').filter(Boolean);
+  const page = parts[0] || 'home';
+  const param = parts[1];
+  if (page === 'home') return loadFeed();
+  if (page === 'post') return showPostDetail(postId || param);
+  if (page === 'profile') return showUserProfile(param || STATE.currentUser.id);
+  return Promise.resolve();
 }

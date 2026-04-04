@@ -22,12 +22,15 @@
           <input type="text" id="username" class="form-input" placeholder="student_11а_1" required>
         </div>
         
-        <div class="form-group">
+        <div class="form-group" id="login-password-group">
           <label class="form-label">Парола</label>
           <input type="password" id="password" class="form-input" placeholder="••••••••" required>
         </div>
-        
-        <button type="submit" class="login-btn">Вход</button>
+        <div class="form-group hidden" id="login-2fa-group">
+          <label class="form-label">2FA код</label>
+          <input type="text" id="two-factor-code" class="form-input" placeholder="123456" inputmode="numeric" maxlength="6">
+        </div>
+        <button type="submit" class="login-btn" id="login-submit-btn" onclick="if (STATE.pending2FAToken) { event.preventDefault(); handleTwoFactorSubmit(); }">Вход</button>
         <div id="login-error" class="error-msg hidden"></div>
       </form>
       
@@ -91,6 +94,10 @@
           <div class="nav-item" id="admin-nav" onclick="navigateTo('admin')" style="display: none;">
             <span class="icon"><i data-lucide="shield-check"></i></span>
             <span>Управление</span>
+          </div>
+          <div class="nav-item" onclick="openSettingsModal()">
+            <span class="icon"><i data-lucide="settings"></i></span>
+            <span>Настройки</span>
           </div>
         </nav>
       </aside>
@@ -245,7 +252,15 @@
           <div id="clubs-widget" class="widget-content"></div>
         </div>
       </aside>
-    </div>
+    
+      <nav class="mobile-bottom-nav">
+        <button class="mobile-nav-item" onclick="navigateTo('home')"><i data-lucide="home"></i><span>Начало</span></button>
+        <button class="mobile-nav-item" onclick="navigateTo('search')"><i data-lucide="search"></i><span>Търси</span></button>
+        <button class="mobile-nav-item" onclick="navigateTo('messages')"><i data-lucide="messages-square"></i><span>Чат</span></button>
+        <button class="mobile-nav-item" onclick="navigateTo('calendar')"><i data-lucide="calendar"></i><span>Календар</span></button>
+        <button class="mobile-nav-item" onclick="openSettingsModal()"><i data-lucide="settings"></i><span>Още</span></button>
+      </nav>
+
   </div>
 
   <!-- Modals -->
@@ -510,5 +525,49 @@
   <script src="js/admin.js"></script>
   <script src="js/profile.js"></script>
   <script src="js/notifications.js"></script>
+
+  <div id="settings-modal" class="modal hidden">
+    <div class="modal-overlay" onclick="closeModal('settings-modal')"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Настройки</h3>
+        <button class="modal-close" onclick="closeModal('settings-modal')">&times;</button>
+      </div>
+      <div class="modal-body settings-body">
+        <div class="form-group">
+          <label class="form-label">Тема</label>
+          <select id="theme-select" class="form-input" onchange="handleThemeChange(this.value)">
+            <option value="light">Светла</option>
+            <option value="dark">Тъмна</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Акцентен цвят</label>
+          <div class="accent-swatches">
+            <button type="button" class="accent-swatch accent-blue" data-accent="blue" onclick="handleAccentChange('blue')"></button>
+            <button type="button" class="accent-swatch accent-purple" data-accent="purple" onclick="handleAccentChange('purple')"></button>
+            <button type="button" class="accent-swatch accent-green" data-accent="green" onclick="handleAccentChange('green')"></button>
+            <button type="button" class="accent-swatch accent-orange" data-accent="orange" onclick="handleAccentChange('orange')"></button>
+            <button type="button" class="accent-swatch accent-rose" data-accent="rose" onclick="handleAccentChange('rose')"></button>
+          </div>
+        </div>
+        <div class="settings-card">
+          <div class="settings-row"><strong>2FA</strong><span id="twofa-status">Изключена</span></div>
+          <div class="settings-actions">
+            <button class="btn btn-primary" type="button" onclick="handleSetup2FA()">Настрой 2FA</button>
+            <button class="btn btn-secondary" type="button" onclick="handleDisable2FA()">Изключи 2FA</button>
+          </div>
+          <div id="twofa-setup-box" class="hidden twofa-setup-box">
+            <p>Добави този secret в Authenticator приложение:</p>
+            <div id="twofa-secret" class="code-box"></div>
+            <textarea id="twofa-uri" class="form-input" rows="3" readonly></textarea>
+            <input id="twofa-verify-code" class="form-input" placeholder="Въведи 6-цифрения код">
+            <button class="btn btn-primary" type="button" onclick="handleVerify2FASetup()">Потвърди</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
