@@ -269,7 +269,11 @@ async function handleToggleLike(postId) {
 
   try {
     const result = await API.toggleLike(postId, STATE.currentUser.id);
-    applyPostLikeState(postId, !!result.liked);
+    const confirmedLiked = !!result.liked;
+    const confirmedCount = Number.isFinite(Number(result.like_count))
+      ? Number(result.like_count)
+      : Math.max(0, currentCount + (confirmedLiked === wasLiked ? 0 : (confirmedLiked ? 1 : -1)));
+    applyPostLikeState(postId, confirmedLiked, confirmedCount);
   } catch (error) {
     applyPostLikeState(postId, wasLiked, currentCount);
     showError(error.message);
