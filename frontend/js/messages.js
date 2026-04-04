@@ -14,13 +14,23 @@ async function loadConversations() {
       return;
     }
     
-    listEl.innerHTML = conversations.map(conv => `
+    listEl.innerHTML = conversations.map(conv => {
+      const conversationName = escapeHtml(conv.name || 'Разговор');
+      return `
       <div class="conversation-item ${STATE.currentConversation === conv.id ? 'active' : ''}" 
-           onclick="loadConversation('${conv.id}', '${escapeHtml(conv.name || 'Разговор')}')">
-        <div class="conversation-name">${escapeHtml(conv.name || 'Разговор')}</div>
+           onclick="loadConversation('${conv.id}', '${conversationName}')">
+        <div class="conversation-name">${conversationName}</div>
         <div class="conversation-preview">${escapeHtml(conv.last_message || 'Няма съобщения')}</div>
       </div>
-    `).join('');
+    `;
+    }).join('');
+
+    const activeExists = conversations.some(conv => conv.id === STATE.currentConversation);
+    if ((!STATE.currentConversation || !activeExists) && conversations[0]) {
+      const firstConversationName = conversations[0].name || 'Разговор';
+      await loadConversation(conversations[0].id, firstConversationName);
+      return;
+    }
   } catch (error) {
     console.error('Conversations error:', error);
     listEl.innerHTML = '<div class="empty-state">Грешка при зареждане</div>';

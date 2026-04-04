@@ -651,14 +651,14 @@ app.get('/api/users/:userId/profile', authMiddleware, async (req, res) => {
     const posts = await db.prepare(`
       SELECT 
         p.*,
-        u.full_name, u.role, u.class_grade, u.class_letter, u.profile_picture,
+        u.username, u.full_name, u.role, u.class_grade, u.class_letter, u.profile_picture,
         (SELECT COUNT(*) FROM likes WHERE post_id = p.id) as like_count,
         (SELECT COUNT(*) FROM comments WHERE post_id = p.id) as comment_count
       FROM posts p
       JOIN users u ON p.user_id = u.id
       WHERE p.user_id = ?
       ORDER BY p.created_at DESC
-    `).all(req.user.id);
+    `).all(req.params.userId);
     
     user.posts = posts;
     res.json(user);

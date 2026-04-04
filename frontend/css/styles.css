@@ -1871,3 +1871,83 @@ body[data-theme='dark'] .visibility-select:hover {
 body[data-theme='dark'] .site-logo {
   filter: brightness(0) invert(1);
 }
+
+
+/* v5 fixes: profile readability, composer polish, mobile messages */
+.profile-header {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 68%, #8b5cf6) 0%, color-mix(in srgb, var(--accent) 38%, #111827) 100%) !important;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+}
+.profile-header,
+.profile-header .profile-header-text,
+.profile-header .profile-name,
+.profile-header .profile-username {
+  color: #ffffff !important;
+}
+.profile-header .profile-username {
+  opacity: 0.92;
+}
+.profile-details,
+.profile-details .profile-name,
+.profile-details .profile-username,
+.profile-details .profile-bio,
+.profile-details .profile-stats,
+.profile-details .profile-stat,
+.profile-details .profile-stat strong {
+  color: var(--text) !important;
+}
+.profile-details .profile-username,
+.profile-details .profile-stats {
+  color: var(--muted) !important;
+}
+.profile-posts .empty-state {
+  padding: 18px;
+}
+.post-composer {
+  padding: 16px;
+  border-radius: 20px;
+}
+.composer-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.composer-input {
+  background: var(--surface-2) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 18px;
+  padding: 14px 16px;
+  min-height: 88px;
+  line-height: 1.45;
+}
+.composer-input::placeholder {
+  color: var(--muted) !important;
+}
+#post-image-url,
+.visibility-select {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+}
+body[data-theme='dark'] .post-composer {
+  background: #102031 !important;
+}
+body[data-theme='dark'] .composer-input {
+  background: #0d1a28 !important;
+}
+@media (max-width: 768px) {
+  .messages-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .conversations-list {
+    display: block !important;
+    max-height: 34vh;
+    overflow-y: auto;
+  }
+  .chat-area {
+    min-height: 52vh;
+  }
+}
